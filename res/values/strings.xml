@@ -1,0 +1,10 @@
+<resources>
+
+    <string name="app_name">ZombieSurvival</string>
+    <string name="touch_to_start">touch to launch test activity</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_main">Zombie Survival</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_test">TestActivity</string>
+
+</resources>
