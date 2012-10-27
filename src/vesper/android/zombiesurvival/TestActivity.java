@@ -1,6 +1,6 @@
 package vesper.android.zombiesurvival;
 
-import org.andengine.engine.camera.Camera;
+import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl.IAnalogOnScreenControlListener;
@@ -22,6 +22,11 @@ import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.input.sensor.acceleration.AccelerationData;
 import org.andengine.input.sensor.acceleration.IAccelerationListener;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.input.touch.detector.PinchZoomDetector;
+import org.andengine.input.touch.detector.PinchZoomDetector.IPinchZoomDetectorListener;
+import org.andengine.input.touch.detector.ScrollDetector;
+import org.andengine.input.touch.detector.ScrollDetector.IScrollDetectorListener;
+import org.andengine.input.touch.detector.SurfaceScrollDetector;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -36,7 +41,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public class TestActivity extends SimpleBaseGameActivity implements IAccelerationListener, IOnSceneTouchListener, IOnAreaTouchListener {
+public class TestActivity extends SimpleBaseGameActivity implements IAccelerationListener, IOnSceneTouchListener, IOnAreaTouchListener, IScrollDetectorListener, IPinchZoomDetectorListener {
 	// ===========================================================
 	// Constants
 	// ===========================================================
@@ -48,8 +53,13 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 	// Fields
 	// ===========================================================
 
-	private Camera mCamera;
+	// camera related
+	private ZoomCamera mZoomCamera;
+	private SurfaceScrollDetector mScrollDetector;
+	private PinchZoomDetector mPinchZoomDetector;
+	private float mPinchZoomStartedCameraZoomFactor;
 	
+	// texture related
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	
 	private BitmapTextureAtlas mOnScreenControlTexture;
@@ -61,6 +71,7 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 	
 	private Sprite mAndroid; //handle to "player" - android sprite
 
+	// physics related
 	private PhysicsWorld mPhysicsWorld;
 
 	private float mGravityX;
@@ -84,9 +95,9 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 	public EngineOptions onCreateEngineOptions() {
 		Toast.makeText(this, "Touch the screen to add objects. Touch an object to shoot it up into the air.", Toast.LENGTH_LONG).show();
 
-		this.mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+		this.mZoomCamera = new ZoomCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 
-		return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), mCamera);
+		return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), mZoomCamera);
 	}
 
 	@Override
@@ -111,8 +122,14 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, SensorManager.GRAVITY_EARTH), false);
 
 		this.mScene = new Scene();
+		this.mScene.setOnAreaTouchTraversalFrontToBack();
 		this.mScene.setBackground(new Background(0, 0, 0));
 		this.mScene.setOnSceneTouchListener(this);
+		
+		this.mScrollDetector = new SurfaceScrollDetector(this);
+		this.mPinchZoomDetector = new PinchZoomDetector(this);
+		
+		this.mScene.setTouchAreaBindingOnActionDownEnabled(true);
 
 		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
 		final Rectangle ground = new Rectangle(0, CAMERA_HEIGHT - 2, CAMERA_WIDTH, 2, vertexBufferObjectManager);
@@ -179,7 +196,7 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 	}
 
 	private void initOnScreenControls() {
-		final AnalogOnScreenControl analogOnScreenControl = new AnalogOnScreenControl(0, CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight(), this.mCamera, this.mOnScreenControlBaseTextureRegion, this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
+		final AnalogOnScreenControl analogOnScreenControl = new AnalogOnScreenControl(0, CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight(), this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
 				final Body carBody = (Body)TestActivity.this.mAndroid.getUserData();
@@ -226,13 +243,25 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 
 	@Override
 	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
-		if(this.mPhysicsWorld != null) {
+//		From pinch zoom example
+//		-----------------------
+		this.mPinchZoomDetector.onTouchEvent(pSceneTouchEvent);
+
+		if(this.mPinchZoomDetector.isZooming()) {
+			this.mScrollDetector.setEnabled(false);
+		} else {
 			if(pSceneTouchEvent.isActionDown()) {
-				this.addZombie(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
-				return true;
+				this.mScrollDetector.setEnabled(true);
+				if(this.mPhysicsWorld != null) {
+					if(pSceneTouchEvent.isActionDown()) {
+						this.addZombie(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
+					}
+				}
 			}
+			this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
 		}
-		return false;
+
+		return true;
 	}
 
 	@Override
@@ -289,6 +318,39 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 		final Vector2 velocity = Vector2Pool.obtain(this.mGravityX * -50, this.mGravityY * -50);
 		zombieBody.setLinearVelocity(velocity);
 		Vector2Pool.recycle(velocity);
+	}
+
+	@Override
+	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+		final float zoomFactor = this.mZoomCamera.getZoomFactor();
+		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+	}
+
+	@Override
+	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+		final float zoomFactor = this.mZoomCamera.getZoomFactor();
+		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+	}
+	
+	@Override
+	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+		final float zoomFactor = this.mZoomCamera.getZoomFactor();
+		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+	}
+
+	@Override
+	public void onPinchZoomStarted(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent) {
+		this.mPinchZoomStartedCameraZoomFactor = this.mZoomCamera.getZoomFactor();
+	}
+
+	@Override
+	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+	}
+
+	@Override
+	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
 	}
 
 	// ===========================================================
