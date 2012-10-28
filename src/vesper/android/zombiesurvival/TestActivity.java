@@ -35,13 +35,16 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import android.hardware.SensorManager;
 import android.opengl.GLES20;
-import android.widget.Toast;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public class TestActivity extends SimpleBaseGameActivity implements IAccelerationListener, IOnSceneTouchListener, IOnAreaTouchListener, IScrollDetectorListener, IPinchZoomDetectorListener {
+public class TestActivity extends SimpleBaseGameActivity implements IAccelerationListener,
+																	IOnSceneTouchListener,
+																	IOnAreaTouchListener,
+																	IScrollDetectorListener,
+																	IPinchZoomDetectorListener {
 	// ===========================================================
 	// Constants
 	// ===========================================================
@@ -93,25 +96,29 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
-		Toast.makeText(this, "Touch the screen to add objects. Touch an object to shoot it up into the air.", Toast.LENGTH_LONG).show();
-
 		this.mZoomCamera = new ZoomCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-
-		return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), mZoomCamera);
+		return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED,
+				new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), mZoomCamera);
 	}
 
 	@Override
 	public void onCreateResources() {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 
-		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 32, 64, TextureOptions.BILINEAR);
-		this.mAndroidTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, "Android.png", 0, 0);
-		this.mZombieTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(this.mBitmapTextureAtlas, this, "Zombie.png", 0, 32, 1, 1);
+		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(),
+				32, 64, TextureOptions.BILINEAR);
+		this.mAndroidTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+				this.mBitmapTextureAtlas, this, "Android.png", 0, 0);
+		this.mZombieTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
+				this.mBitmapTextureAtlas, this, "Zombie.png", 0, 32, 1, 1);
 		this.mBitmapTextureAtlas.load();
 		
-		this.mOnScreenControlTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 128, TextureOptions.BILINEAR);
-		this.mOnScreenControlBaseTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mOnScreenControlTexture, this, "onscreen_control_base.png", 0, 0);
-		this.mOnScreenControlKnobTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mOnScreenControlTexture, this, "onscreen_control_knob.png", 128, 0);
+		this.mOnScreenControlTexture = new BitmapTextureAtlas(this.getTextureManager(),
+				256, 128, TextureOptions.BILINEAR);
+		this.mOnScreenControlBaseTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+				this.mOnScreenControlTexture, this, "onscreen_control_base.png", 0, 0);
+		this.mOnScreenControlKnobTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+				this.mOnScreenControlTexture, this, "onscreen_control_knob.png", 128, 0);
 		this.mOnScreenControlTexture.load();
 	}
 
@@ -121,21 +128,63 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 
 		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, SensorManager.GRAVITY_EARTH), false);
 
-		this.mScene = new Scene();
-		this.mScene.setOnAreaTouchTraversalFrontToBack();
-		this.mScene.setBackground(new Background(0, 0, 0));
-		this.mScene.setOnSceneTouchListener(this);
+		Scene scene = new Scene();
+		this.mScene = scene;
+		scene.setOnAreaTouchTraversalFrontToBack();
+		scene.setBackground(new Background(0, 0, 0));
+		scene.setOnSceneTouchListener(this);
+		scene.setTouchAreaBindingOnActionDownEnabled(true);
+		scene.registerUpdateHandler(this.mPhysicsWorld);
+		scene.setOnAreaTouchListener(this);
 		
 		this.mScrollDetector = new SurfaceScrollDetector(this);
 		this.mPinchZoomDetector = new PinchZoomDetector(this);
 		
-		this.mScene.setTouchAreaBindingOnActionDownEnabled(true);
-
 		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
+
+		createBorders(scene, vertexBufferObjectManager);
+		createTestBarrier(scene, vertexBufferObjectManager);
+		createPlayer(scene, vertexBufferObjectManager);
+		initOnScreenControls(scene, vertexBufferObjectManager);
+		
+		return scene;
+	}
+
+	private void createPlayer(Scene scene, VertexBufferObjectManager vertexBufferObjectManager) {
+		// create android in middle of screen
+		final FixtureDef objectFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f);
+		final Sprite androidSprite = new Sprite(CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2,
+				this.mAndroidTextureRegion, vertexBufferObjectManager);
+		mAndroid = androidSprite;
+		final Body body = PhysicsFactory.createCircleBody(this.mPhysicsWorld, androidSprite,
+				BodyType.DynamicBody, objectFixtureDef);
+		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(androidSprite, body, true, true));
+		androidSprite.setUserData(body);
+		scene.registerTouchArea(androidSprite);
+		scene.attachChild(androidSprite);
+	}
+
+	private void createBorders(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager) {
+		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
+		
 		final Rectangle ground = new Rectangle(0, CAMERA_HEIGHT - 2, CAMERA_WIDTH, 2, vertexBufferObjectManager);
 		final Rectangle roof = new Rectangle(0, 0, CAMERA_WIDTH, 2, vertexBufferObjectManager);
 		final Rectangle left = new Rectangle(0, 0, 2 , CAMERA_HEIGHT, vertexBufferObjectManager);
 		final Rectangle right = new Rectangle(CAMERA_WIDTH - 2, 0, 2, CAMERA_HEIGHT, vertexBufferObjectManager);
+		
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, ground, BodyType.StaticBody, wallFixtureDef);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roof, BodyType.StaticBody, wallFixtureDef);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef);
+		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef);
+		
+		scene.attachChild(ground);
+		scene.attachChild(roof);
+		scene.attachChild(left);
+		scene.attachChild(right);
+	}
+
+	private void createTestBarrier(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager) {
+		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
 		
 		/*
 		 *                  _______
@@ -159,46 +208,21 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 		final Rectangle midLong = new Rectangle(xA, yA, lenA, hA, vertexBufferObjectManager);
 		final Rectangle midTall = new Rectangle(xB, yB, lenB, hB, vertexBufferObjectManager);
 		
-		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, ground, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roof, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef);
-		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef);
-		
 		PhysicsFactory.createBoxBody(mPhysicsWorld, midLong, BodyType.StaticBody, wallFixtureDef);
 		PhysicsFactory.createBoxBody(mPhysicsWorld, midTall, BodyType.StaticBody, wallFixtureDef);
 
-		this.mScene.attachChild(ground);
-		this.mScene.attachChild(roof);
-		this.mScene.attachChild(left);
-		this.mScene.attachChild(right);
-		
-		this.mScene.attachChild(midLong);
-		this.mScene.attachChild(midTall);
-
-		this.mScene.registerUpdateHandler(this.mPhysicsWorld);
-
-		this.mScene.setOnAreaTouchListener(this);
-		
-		// create android in middle of screen
-		final FixtureDef objectFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f);
-		final Sprite androidSprite = new Sprite(CAMERA_WIDTH / 2, CAMERA_HEIGHT / 2, this.mAndroidTextureRegion, this.getVertexBufferObjectManager());
-		mAndroid = androidSprite;
-		final Body body = PhysicsFactory.createCircleBody(this.mPhysicsWorld, androidSprite, BodyType.DynamicBody, objectFixtureDef);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(androidSprite, body, true, true));
-		androidSprite.setUserData(body);
-		this.mScene.registerTouchArea(androidSprite);
-		this.mScene.attachChild(androidSprite);
-
-		this.initOnScreenControls();
-		
-		return this.mScene;
+		scene.attachChild(midLong);
+		scene.attachChild(midTall);
 	}
 
-	private void initOnScreenControls() {
-		final AnalogOnScreenControl analogOnScreenControl = new AnalogOnScreenControl(0, CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight(), this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
+	private void initOnScreenControls(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager) {
+		final AnalogOnScreenControl analogOnScreenControl =
+				new AnalogOnScreenControl(0, CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight(),
+						this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, this.mOnScreenControlKnobTextureRegion,
+						0.1f, vertexBufferObjectManager, new IAnalogOnScreenControlListener() {
 			@Override
-			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
+			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl,
+					final float pValueX, final float pValueY) {
 				final Body carBody = (Body)TestActivity.this.mAndroid.getUserData();
 				final Vector2 velocity = Vector2Pool.obtain(pValueX * 200, pValueY * 200);
 				if (velocity.len2() > 1) {
@@ -224,11 +248,12 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 		//		analogOnScreenControl.getControlKnob().setScale(0.75f);
 		analogOnScreenControl.refreshControlKnobPosition();
 
-		this.mScene.setChildScene(analogOnScreenControl);
+		scene.setChildScene(analogOnScreenControl);
 	}
 
 	@Override
-	public boolean onAreaTouched( final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea,final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+	public boolean onAreaTouched( final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea,
+			final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 		if(pSceneTouchEvent.isActionDown()) {
 			final Sprite face = (Sprite) pTouchArea;
 			if (face.equals(mAndroid)) {
@@ -303,7 +328,8 @@ public class TestActivity extends SimpleBaseGameActivity implements IAcceleratio
 		final FixtureDef objectFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f);
 
 		zombieSprite = new Sprite(pX, pY, this.mZombieTextureRegion, this.getVertexBufferObjectManager());
-		zombieBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, zombieSprite, BodyType.DynamicBody, objectFixtureDef);
+		zombieBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, zombieSprite,
+				BodyType.DynamicBody, objectFixtureDef);
 
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(zombieSprite, zombieBody, true, true));
 
