@@ -5,7 +5,6 @@ import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl.IAnalogOnScreenControlListener;
-import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -113,7 +112,7 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		this.mZombieTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
 				this.mBitmapTextureAtlas, this, "Zombie.png", 0, 32, 1, 1);
 		this.mBitmapTextureAtlas.load();
-		
+
 		this.mOnScreenControlTexture = new BitmapTextureAtlas(this.getTextureManager(),
 				256, 128, TextureOptions.BILINEAR);
 		this.mOnScreenControlBaseTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
@@ -127,7 +126,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	public Scene onCreateScene() {
 		this.mEngine.registerUpdateHandler(new FPSLogger());
 
-		// this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, SensorManager.GRAVITY_EARTH), false);
 		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
 
 		Scene scene = new Scene();
@@ -150,8 +148,13 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 		// add some zombies randomly
 		Random rand = new Random();
+		int x,y;
 		for (int i = 0; i < 50; i++) {
-			addZombie(rand.nextInt(LEVEL_WIDTH - 64) + 32, rand.nextInt(LEVEL_HEIGHT - 64) + 32);
+			x = rand.nextInt(LEVEL_WIDTH - 64) + 32;
+			y = rand.nextInt(LEVEL_HEIGHT - 64) + 32;
+			Zombie zombie = new Zombie(x, y, mZombieTextureRegion,
+					this.getVertexBufferObjectManager(), mPhysicsWorld, mAndroid);
+			zombie.attach(mScene, mPhysicsWorld);
 		}
 		
 		initOnScreenControls(scene, vertexBufferObjectManager);
@@ -169,7 +172,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 				BodyType.DynamicBody, objectFixtureDef);
 		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(androidSprite, body, true, true));
 		androidSprite.setUserData(body);
-		scene.registerTouchArea(androidSprite);
 		scene.attachChild(androidSprite);
 	}
 
@@ -253,18 +255,9 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	}
 
 	@Override
-	public boolean onAreaTouched( final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea,
+	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea,
 			final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-		if(pSceneTouchEvent.isActionDown()) {
-			final Sprite face = (Sprite) pTouchArea;
-			if (face.equals(mAndroid)) {
-			} else {
-				this.jumpZombie(face);
-			}
-			return true;
-		}
-
-		return false;
+		return pTouchArea.onAreaTouched(pSceneTouchEvent, pTouchAreaLocalX, pTouchAreaLocalY);
 	}
 
 	@Override
@@ -301,52 +294,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	// ===========================================================
 	// Methods
 	// ===========================================================
-
-	private void addZombie(final float pX, final float pY) {
-		final Sprite zombieSprite;
-		final Body zombieBody;
-
-		final FixtureDef objectFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f);
-
-		zombieSprite = new Sprite(pX, pY, this.mZombieTextureRegion, this.getVertexBufferObjectManager());
-		zombieBody = PhysicsFactory.createCircleBody(this.mPhysicsWorld, zombieSprite,
-				BodyType.DynamicBody, objectFixtureDef);
-
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(zombieSprite, zombieBody, true, true));
-
-		zombieSprite.registerUpdateHandler(new IUpdateHandler() {
-			
-			@Override
-			public void reset() {
-			}
-			
-			@Override
-			public void onUpdate(float pSecondsElapsed) {
-				// follow player
-				final Vector2 distance = Vector2Pool.obtain(mAndroid.getX(), mAndroid.getY());
-				distance.sub(zombieSprite.getX(), zombieSprite.getY());
-				// only if close enough to smell him
-				if (distance.len() < 50) {
-					zombieBody.setLinearVelocity(distance.nor().mul(10));
-				}
-				Vector2Pool.recycle(distance);
-			}
-		});
-		
-		zombieSprite.setUserData(zombieBody);
-		this.mScene.registerTouchArea(zombieSprite);
-		this.mScene.attachChild(zombieSprite);
-	}
-
-	private void jumpZombie(final Sprite zombie) {
-		final Body zombieBody = (Body)zombie.getUserData();
-		Random rand = new Random();
-		final float x = rand.nextFloat();
-		final float y = rand.nextFloat();
-		final Vector2 velocity = Vector2Pool.obtain(x, y);
-		zombieBody.setLinearVelocity(velocity.nor().mul(200));
-		Vector2Pool.recycle(velocity);
-	}
 
 	@Override
 	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
