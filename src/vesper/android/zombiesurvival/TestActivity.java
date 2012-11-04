@@ -14,9 +14,7 @@ import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
-import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
-import org.andengine.extension.physics.box2d.PhysicsConnector;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
@@ -64,21 +62,17 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	
 	// texture related
 	private BitmapTextureAtlas mBitmapTextureAtlas;
-	
 	private BitmapTextureAtlas mOnScreenControlTexture;
 	private ITextureRegion mOnScreenControlBaseTextureRegion;
 	private ITextureRegion mOnScreenControlKnobTextureRegion;
-
+	
 	private ITextureRegion mAndroidTextureRegion;
 	private ITextureRegion mZombieTextureRegion;
 	
-	private Sprite mAndroid; //handle to "player" - android sprite
+	private PhysicalSprite mAndroid; //handle to "player" - android sprite
 
 	// physics related
 	private PhysicsWorld mPhysicsWorld;
-
-	//private float mGravityX;
-	//private float mGravityY;
 
 	private Scene mScene;
 
@@ -144,7 +138,12 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 		createBorders(scene, vertexBufferObjectManager);
 		createTestBarrier(scene, vertexBufferObjectManager);
-		createPlayer(scene, vertexBufferObjectManager);
+		
+		// create player in center of the screen
+		Player player = new Player(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2,
+				mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
+		mAndroid = player;
+		player.attach(scene, mPhysicsWorld);
 
 		// add some zombies randomly
 		Random rand = new Random();
@@ -160,19 +159,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		initOnScreenControls(scene, vertexBufferObjectManager);
 		
 		return scene;
-	}
-
-	private void createPlayer(Scene scene, VertexBufferObjectManager vertexBufferObjectManager) {
-		// create android in middle of screen
-		final FixtureDef objectFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f);
-		final Sprite androidSprite = new Sprite(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2,
-				this.mAndroidTextureRegion, vertexBufferObjectManager);
-		mAndroid = androidSprite;
-		final Body body = PhysicsFactory.createCircleBody(this.mPhysicsWorld, androidSprite,
-				BodyType.DynamicBody, objectFixtureDef);
-		this.mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(androidSprite, body, true, true));
-		androidSprite.setUserData(body);
-		scene.attachChild(androidSprite);
 	}
 
 	private void createBorders(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager) {
@@ -226,13 +212,13 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	private void initOnScreenControls(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager) {
 		final AnalogOnScreenControl analogOnScreenControl =
-				new AnalogOnScreenControl(0, DEFAULT_CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight(),
-						this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, this.mOnScreenControlKnobTextureRegion,
+				new AnalogOnScreenControl(0, DEFAULT_CAMERA_HEIGHT - mOnScreenControlBaseTextureRegion.getHeight(),
+						mZoomCamera, mOnScreenControlBaseTextureRegion, mOnScreenControlKnobTextureRegion,
 						0.1f, vertexBufferObjectManager, new IAnalogOnScreenControlListener() {
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl,
 					final float pValueX, final float pValueY) {
-				final Body androidBody = (Body)TestActivity.this.mAndroid.getUserData();
+				final Body androidBody = mAndroid.getBody();
 				final Vector2 velocity = Vector2Pool.obtain(pValueX * 20, pValueY * 20);
 				androidBody.setLinearVelocity(velocity);
 				Vector2Pool.recycle(velocity);
