@@ -34,7 +34,7 @@ public class PhysicalSprite extends Sprite {
 	 */
 	public void attach(Scene pScene, PhysicsWorld pPhysicsWorld) {
 		pScene.registerTouchArea(this);
-		pScene.attachChild(this);
+		//pScene.attachChild(this);
 		pPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(this, mBody, true, true));
 	}
 	

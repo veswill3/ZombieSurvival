@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<level width="2000" height="1000">
+    <entity x="1000" y="600" width="32" height="32" type="player"/>
+	<entity x="400" y="200" width="200" height="400" type="wall"/>
+	<entity x="600" y="200" width="600" height="200" type="wall"/>
+	<entity x="1200" y="200" width="200" height="400" type="wall"/>
+	<entity x="800" y="800" width="400" height="200" type="wall"/>
+	<entity x="1600" y="600" width="200" height="400" type="wall"/>
+	<entity x="200" y="200" width="32" height="32" type="zombie"/>
+	<entity x="200" y="400" width="32" height="32" type="zombie"/>
+	<entity x="200" y="600" width="32" height="32" type="zombie"/>
+	<entity x="200" y="800" width="32" height="32" type="zombie"/>
+	<entity x="600" y="800" width="32" height="32" type="zombie"/>
+	<entity x="1600" y="200" width="32" height="32" type="zombie"/>
+	<entity x="1800" y="400" width="32" height="32" type="zombie"/>
+</level>
