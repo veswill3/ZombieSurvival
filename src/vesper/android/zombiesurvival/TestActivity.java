@@ -158,6 +158,8 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		
 		initOnScreenControls(scene, vertexBufferObjectManager);
 		
+		mZoomCamera.setBounds(0, 0, LEVEL_WIDTH, LEVEL_HEIGHT);
+		mZoomCamera.setBoundsEnabled(true);
 		return scene;
 	}
 
