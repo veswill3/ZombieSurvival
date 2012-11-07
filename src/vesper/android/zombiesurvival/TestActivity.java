@@ -53,22 +53,20 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	// Constants
 	// ===========================================================
 
-//	private static final int LEVEL_WIDTH = 2000;
-//	private static final int LEVEL_HEIGHT = 1000;
 	private static final int DEFAULT_CAMERA_WIDTH = 800;
 	private static final int DEFAULT_CAMERA_HEIGHT = 480;
 	
 	// level loading related
 	private static final String TAG_ENTITY = "entity";
-	private static final String TAG_ENTITY_ATTRIBUTE_X = "x";
-	private static final String TAG_ENTITY_ATTRIBUTE_Y = "y";
-	private static final String TAG_ENTITY_ATTRIBUTE_WIDTH = "width";
-	private static final String TAG_ENTITY_ATTRIBUTE_HEIGHT = "height";
-	private static final String TAG_ENTITY_ATTRIBUTE_TYPE = "type";
+	private static final String TAG_WALL = "wall";
+	private static final String TAG_ATTRIBUTE_X = "x";
+	private static final String TAG_ATTRIBUTE_Y = "y";
+	private static final String TAG_ATTRIBUTE_WIDTH = "width";
+	private static final String TAG_ATTRIBUTE_HEIGHT = "height";
+	private static final String TAG_ATTRIBUTE_TYPE = "type";
 
-	private static final String TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_ZOMBIE = "zombie";
-	private static final String TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLAYER = "player";
-	private static final String TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_WALL = "wall";
+	private static final String TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE = "zombie";
+	private static final String TAG_ATTRIBUTE_TYPE_VALUE_PLAYER = "player";
 
 	// ===========================================================
 	// Fields
@@ -93,8 +91,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	// physics related
 	private PhysicsWorld mPhysicsWorld;
-
-//	private Scene mScene;
 
 	// ===========================================================
 	// Constructors
@@ -143,7 +139,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
 
 		final Scene scene = new Scene();
-//		this.mScene = scene;
 		scene.setOnAreaTouchTraversalFrontToBack();
 		scene.setBackground(new Background(0, 0, 0));
 		scene.setOnSceneTouchListener(this);
@@ -177,28 +172,36 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 			}
 		});
 		
+		levelLoader.registerEntityLoader(TAG_WALL, new IEntityLoader() {
+			@Override
+			public IEntity onLoadEntity(final String pEntityName, final Attributes pAttributes) {
+				Log.d("LevelLoader", "About to load a wall");
+				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_X);
+				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
+				final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_WIDTH);
+				final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_HEIGHT);
+
+				return createWall(x, y, width, height);
+			}
+		});
+		
 		levelLoader.registerEntityLoader(TAG_ENTITY, new IEntityLoader() {
 			@Override
 			public IEntity onLoadEntity(final String pEntityName, final Attributes pAttributes) {
 				Log.d("LevelLoader", "About to load an entity");
-				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_X);
-				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_Y);
-				final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_WIDTH);
-				final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_HEIGHT);
-				final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ENTITY_ATTRIBUTE_TYPE);
+				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_X);
+				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
+				final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_TYPE);
 
 				final VertexBufferObjectManager vertexBufferObjectManager = TestActivity.this.getVertexBufferObjectManager();
 
 				IEntity entity;	
-				if(type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_ZOMBIE)) {
+				if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE)) {
 					Log.d("LevelLoader", "loading a zombie");
 					Zombie zombie = new Zombie(x, y, mZombieTextureRegion, vertexBufferObjectManager, mPhysicsWorld, mAndroid);
 					zombie.attach(scene, mPhysicsWorld);
 					entity = zombie;
-				} else if(type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_WALL)) {
-					Log.d("LevelLoader", "loading a wall");
-					entity = createWall(x, y, width, height);
-				} else if(type.equals(TAG_ENTITY_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
+				} else if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
 					Log.d("LevelLoader", "loading a player");
 					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
 					mAndroid = player;
@@ -219,25 +222,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		} catch (final IOException e) {
 			Debug.e(e);
 		}
-//
-		//createBorders(scene, vertexBufferObjectManager);
-		
-		// create player in center of the screen
-//		Player player = new Player(LEVEL_WIDTH / 2, LEVEL_HEIGHT / 2,
-//				mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
-//		mAndroid = player;
-//		player.attach(scene, mPhysicsWorld);
-//
-//		// add some zombies randomly
-//		Random rand = new Random();
-//		int x,y;
-//		for (int i = 0; i < 50; i++) {
-//			x = rand.nextInt(LEVEL_WIDTH - 64) + 32;
-//			y = rand.nextInt(LEVEL_HEIGHT - 64) + 32;
-//			Zombie zombie = new Zombie(x, y, mZombieTextureRegion,
-//					this.getVertexBufferObjectManager(), mPhysicsWorld, mAndroid);
-//			zombie.attach(mScene, mPhysicsWorld);
-//		}
 		
 		initOnScreenControls(scene, vertexBufferObjectManager);
 		
@@ -251,25 +235,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		PhysicsFactory.createBoxBody(mPhysicsWorld, wall, BodyType.StaticBody, wallFixtureDef);
 		return wall;
 	}
-
-//	private void createBorders(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager) {
-//		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
-//		
-//		final Rectangle ground = new Rectangle(0, LEVEL_HEIGHT - 2, LEVEL_WIDTH, 2, vertexBufferObjectManager);
-//		final Rectangle roof = new Rectangle(0, 0, LEVEL_WIDTH, 2, vertexBufferObjectManager);
-//		final Rectangle left = new Rectangle(0, 0, 2 , LEVEL_HEIGHT, vertexBufferObjectManager);
-//		final Rectangle right = new Rectangle(LEVEL_WIDTH - 2, 0, 2, LEVEL_HEIGHT, vertexBufferObjectManager);
-//		
-//		PhysicsFactory.createBoxBody(this.mPhysicsWorld, ground, BodyType.StaticBody, wallFixtureDef);
-//		PhysicsFactory.createBoxBody(this.mPhysicsWorld, roof, BodyType.StaticBody, wallFixtureDef);
-//		PhysicsFactory.createBoxBody(this.mPhysicsWorld, left, BodyType.StaticBody, wallFixtureDef);
-//		PhysicsFactory.createBoxBody(this.mPhysicsWorld, right, BodyType.StaticBody, wallFixtureDef);
-//		
-//		scene.attachChild(ground);
-//		scene.attachChild(roof);
-//		scene.attachChild(left);
-//		scene.attachChild(right);
-//	}
 
 	private void initOnScreenControls(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager) {
 		final AnalogOnScreenControl analogOnScreenControl =
