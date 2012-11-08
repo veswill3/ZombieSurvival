@@ -195,23 +195,18 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 				final VertexBufferObjectManager vertexBufferObjectManager = TestActivity.this.getVertexBufferObjectManager();
 
-				IEntity entity;	
 				if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE)) {
 					Log.d("LevelLoader", "loading a zombie");
 					Zombie zombie = new Zombie(x, y, mZombieTextureRegion, vertexBufferObjectManager, mPhysicsWorld, mAndroid);
-					zombie.attach(scene, mPhysicsWorld);
-					entity = zombie;
+					scene.registerTouchArea(zombie);
+					return zombie;
 				} else if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
 					Log.d("LevelLoader", "loading a player");
-					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
-					mAndroid = player;
-					player.attach(scene, mPhysicsWorld);
-					entity = player;
+					mAndroid = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
+					return mAndroid;
 				} else {
 					throw new IllegalArgumentException();
 				}
-
-				return entity;
 			}
 		});
 
