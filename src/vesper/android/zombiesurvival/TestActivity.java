@@ -206,6 +206,7 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 				} else if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
 					Log.d("LevelLoader", "loading a player");
 					mAndroid = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
+					mZoomCamera.setCenter(x, y); // center camera on player
 					return mAndroid;
 				} else {
 					throw new IllegalArgumentException();
