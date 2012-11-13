@@ -6,21 +6,24 @@ import org.andengine.entity.Entity;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
+import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class Zombie extends PhysicalSprite {
 	
 	private static final int SMELL_RADIUS = 100;
 	private final Entity mPlayer;
+	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f);
 	
 	public Zombie(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,
 			PhysicsWorld pPhysicsWorld, Entity player) {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager,
-				pPhysicsWorld, PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f));
+				pPhysicsWorld, mFixtureDef);
 		
 		mPlayer = player;
 
@@ -63,6 +66,12 @@ public class Zombie extends PhysicalSprite {
 			Vector2Pool.recycle(velocity);
 		}
 		return true;
+	}
+
+	public Zombie set(float x, float y) {
+		getBody().setTransform(x / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT,
+				y / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT, 0);
+		return this;
 	}
 
 }

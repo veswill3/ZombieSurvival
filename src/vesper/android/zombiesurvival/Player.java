@@ -12,6 +12,7 @@ public class Player extends PhysicalSprite {
 			PhysicsWorld pPhysicsWorld) {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager, pPhysicsWorld,
 				PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f));
+		setActive(true);
 	}
 
 }

@@ -19,11 +19,21 @@ public class PhysicalSprite extends Sprite {
 			PhysicsWorld pPhysicsWorld, FixtureDef pFixtureDef) {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager);
 		
+		setCullingEnabled(true); // no need to continue to draw when not onscreen
+
+		this.setVisible(false); // initially start invisible until added to world
+		
 		// setup the physics
-		Body body = PhysicsFactory.createCircleBody(pPhysicsWorld, this,
-				BodyType.DynamicBody, pFixtureDef);
+		Body body = PhysicsFactory.createCircleBody(pPhysicsWorld, this, BodyType.DynamicBody, pFixtureDef);
+		body.setActive(false); // initially start inactive until we add it to the world
 		pPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(this, body, true, true));
 		mBody = body;
+	}
+	
+	public void setActive(Boolean activeFlag) {
+		setIgnoreUpdate(!activeFlag);
+		mBody.setActive(activeFlag);
+		this.setVisible(activeFlag);
 	}
 	
 	public Body getBody() {

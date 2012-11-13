@@ -85,9 +85,9 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	private ITextureRegion mOnScreenControlKnobTextureRegion;
 	
 	private ITextureRegion mAndroidTextureRegion;
-	private ITextureRegion mZombieTextureRegion;
+	private ZombiePool mZombiePool;
 	
-	private PhysicalSprite mAndroid; //handle to "player" - android sprite
+	private Player mAndroid; //handle to "player" - android sprite
 
 	// physics related
 	private PhysicsWorld mPhysicsWorld;
@@ -113,14 +113,16 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	@Override
 	public void onCreateResources() {
+		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
+		
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 
+		mZombiePool = new ZombiePool(this, mPhysicsWorld);
+		
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(),
-				32, 64, TextureOptions.BILINEAR);
+				32, 32, TextureOptions.BILINEAR);
 		this.mAndroidTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
 				this.mBitmapTextureAtlas, this, "Android.png", 0, 0);
-		this.mZombieTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
-				this.mBitmapTextureAtlas, this, "Zombie.png", 0, 32, 1, 1);
 		this.mBitmapTextureAtlas.load();
 
 		this.mOnScreenControlTexture = new BitmapTextureAtlas(this.getTextureManager(),
@@ -136,8 +138,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	public Scene onCreateScene() {
 		this.mEngine.registerUpdateHandler(new FPSLogger());
 
-		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
-
 		final Scene scene = new Scene();
 		scene.setOnAreaTouchTraversalFrontToBack();
 		scene.setBackground(new Background(0, 0, 0));
@@ -145,6 +145,8 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		scene.setTouchAreaBindingOnActionDownEnabled(true);
 		scene.registerUpdateHandler(this.mPhysicsWorld);
 		scene.setOnAreaTouchListener(this);
+		
+		scene.registerUpdateHandler(mZombiePool);
 		
 		this.mScrollDetector = new SurfaceScrollDetector(this);
 		this.mPinchZoomDetector = new PinchZoomDetector(this);
@@ -200,13 +202,14 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 				if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE)) {
 					Log.d("LevelLoader", "loading a zombie");
-					Zombie zombie = new Zombie(x, y, mZombieTextureRegion, vertexBufferObjectManager, mPhysicsWorld, mAndroid);
+					Zombie zombie = mZombiePool.obtain(x, y);
 					scene.registerTouchArea(zombie);
 					return zombie;
 				} else if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
 					Log.d("LevelLoader", "loading a player");
 					mAndroid = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
 					mZoomCamera.setCenter(x, y); // center camera on player
+					mZombiePool.setPlayer(mAndroid);
 					return mAndroid;
 				} else {
 					throw new IllegalArgumentException();
