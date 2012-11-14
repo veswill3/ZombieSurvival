@@ -15,9 +15,12 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class Zombie extends PhysicalSprite {
 	
+	public static final short MASKBITS_ZOMBIE = CATEGORYBIT_ENEMY + CATEGORYBIT_WALL + CATEGORYBIT_BULLET + CATEGORYBIT_PLAYER;
+	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
+			CATEGORYBIT_ENEMY, MASKBITS_ZOMBIE, (short)0);
+	
 	private static final int SMELL_RADIUS = 100;
 	private final Entity mPlayer;
-	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f);
 	
 	public Zombie(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,

@@ -41,6 +41,10 @@ import android.opengl.GLES20;
 import android.util.Log;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
@@ -55,6 +59,13 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	private static final int DEFAULT_CAMERA_WIDTH = 800;
 	private static final int DEFAULT_CAMERA_HEIGHT = 480;
+	
+	public static final short CATEGORYBIT_WALL = 1;
+	public static final short MASKBITS_WALL = PhysicalSprite.CATEGORYBIT_ENEMY
+			+ PhysicalSprite.CATEGORYBIT_WALL + PhysicalSprite.CATEGORYBIT_PLAYER
+			+ PhysicalSprite.CATEGORYBIT_BULLET;
+	private final static FixtureDef WALL_FIXTUREDEF = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f,
+			false, CATEGORYBIT_WALL, MASKBITS_WALL, (short)0);
 	
 	// level loading related
 	private static final String TAG_ENTITY = "entity";
@@ -86,6 +97,7 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	
 	private ITextureRegion mAndroidTextureRegion;
 	private ZombiePool mZombiePool;
+	private BulletPool mBulletPool;
 	
 	private Player mAndroid; //handle to "player" - android sprite
 
@@ -118,6 +130,7 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 
 		mZombiePool = new ZombiePool(this, mPhysicsWorld);
+		mBulletPool = new BulletPool(this, mPhysicsWorld);
 		
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(),
 				32, 32, TextureOptions.BILINEAR);
@@ -146,7 +159,52 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		scene.registerUpdateHandler(this.mPhysicsWorld);
 		scene.setOnAreaTouchListener(this);
 		
+		mPhysicsWorld.setContactListener(new ContactListener() {
+			
+			@Override
+			public void preSolve(Contact contact, Manifold oldManifold) {
+			    Object[] userDataArray = {
+			            contact.getFixtureA().getBody().getUserData(),
+			            contact.getFixtureB().getBody().getUserData() 
+			        };
+
+		        if (userDataArray[0] != null && userDataArray[1] != null) {
+		            if (userDataArray[0] instanceof Bullet && userDataArray[1] instanceof Zombie) {
+		            	mBulletPool.recycle((Bullet) userDataArray[0]);
+		            	mZombiePool.recycle((Zombie) userDataArray[1]);
+		            } else if (userDataArray[1] instanceof Bullet && userDataArray[0] instanceof Zombie) {
+		            	mBulletPool.recycle((Bullet) userDataArray[1]);
+		            	mZombiePool.recycle((Zombie) userDataArray[0]);
+		            } else if (userDataArray[0] instanceof Bullet) {
+		            	mBulletPool.recycle((Bullet) userDataArray[0]);
+					} else if (userDataArray[1] instanceof Bullet) {
+						mBulletPool.recycle((Bullet) userDataArray[1]);
+					}
+		        }
+				
+			}
+			
+			@Override
+			public void postSolve(Contact contact, ContactImpulse impulse) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void endContact(Contact contact) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void beginContact(Contact contact) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
 		scene.registerUpdateHandler(mZombiePool);
+		scene.registerUpdateHandler(mBulletPool);
 		
 		this.mScrollDetector = new SurfaceScrollDetector(this);
 		this.mPinchZoomDetector = new PinchZoomDetector(this);
@@ -232,9 +290,8 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	protected IEntity createWall(int x, int y, int width, int height) {
 		Log.d("LevelLoader", "creating wall. x:" + x + " y:" + y + " w:" + width + " h:" + height);
-		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
 		final Rectangle wall = new Rectangle(x, y, width, height, this.getVertexBufferObjectManager());
-		PhysicsFactory.createBoxBody(mPhysicsWorld, wall, BodyType.StaticBody, wallFixtureDef);
+		PhysicsFactory.createBoxBody(mPhysicsWorld, wall, BodyType.StaticBody, WALL_FIXTUREDEF).setUserData(wall);
 		return wall;
 	}
 
@@ -276,6 +333,16 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	@Override
 	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
+		
+		if (pSceneTouchEvent.isActionDown() || pSceneTouchEvent.isActionMove()) {
+			Log.d("Bullet", "should be creating a bullet now...");
+			float x = mAndroid.getX();
+			float y = mAndroid.getY();
+			Bullet b = mBulletPool.obtain(x, y,
+					new Vector2(pSceneTouchEvent.getX(), pSceneTouchEvent.getY()).sub(x, y));
+			pScene.attachChild(b);
+		}
+		
 //		From pinch zoom example
 //		-----------------------
 		this.mPinchZoomDetector.onTouchEvent(pSceneTouchEvent);

@@ -7,6 +7,7 @@ import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.region.ITextureRegion;
+import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.adt.pool.GenericPool;
 
@@ -15,6 +16,7 @@ import android.util.Log;
 public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHandler {
     protected final BaseGameActivity mActivity;
     protected final PhysicsWorld mPhysicsWorld;
+    protected final VertexBufferObjectManager mVertexBufferObjectManager;
     protected BitmapTextureAtlas mTextureAtlas;
     protected ITextureRegion mTextureRegion;
 
@@ -27,6 +29,7 @@ public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHan
         this.mActivity = activity;
         if (physicsWorld == null) throw new IllegalArgumentException ("PhysicsWorld is null");
         this.mPhysicsWorld = physicsWorld;
+        mVertexBufferObjectManager = activity.getVertexBufferObjectManager();
         this.setTextureAtlas(onCreateTextureAtlas());
         assert getTextureAtlas() instanceof BitmapTextureAtlas;
         
