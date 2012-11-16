@@ -20,11 +20,6 @@ import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.input.touch.detector.PinchZoomDetector;
-import org.andengine.input.touch.detector.PinchZoomDetector.IPinchZoomDetectorListener;
-import org.andengine.input.touch.detector.ScrollDetector;
-import org.andengine.input.touch.detector.ScrollDetector.IScrollDetectorListener;
-import org.andengine.input.touch.detector.SurfaceScrollDetector;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -32,6 +27,7 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.SAXUtils;
+import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 import org.andengine.util.level.IEntityLoader;
 import org.andengine.util.level.LevelLoader;
@@ -46,9 +42,9 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class TestActivity extends SimpleBaseGameActivity implements //IAccelerationListener,
 																	IOnSceneTouchListener,
-																	IOnAreaTouchListener,
-																	IScrollDetectorListener,
-																	IPinchZoomDetectorListener {
+																	IOnAreaTouchListener {
+																	//IScrollDetectorListener,
+																	//IPinchZoomDetectorListener {
 	// ===========================================================
 	// Constants
 	// ===========================================================
@@ -74,9 +70,9 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	// camera related
 	private ZoomCamera mZoomCamera;
-	private SurfaceScrollDetector mScrollDetector;
-	private PinchZoomDetector mPinchZoomDetector;
-	private float mPinchZoomStartedCameraZoomFactor;
+//	private SurfaceScrollDetector mScrollDetector;
+//	private PinchZoomDetector mPinchZoomDetector;
+//	private float mPinchZoomStartedCameraZoomFactor;
 	
 	// texture related
 	private BitmapTextureAtlas mBitmapTextureAtlas;
@@ -140,7 +136,7 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 		final Scene scene = new Scene();
 		scene.setOnAreaTouchTraversalFrontToBack();
-		scene.setBackground(new Background(0, 0, 0));
+		scene.setBackground(new Background(.7f, .7f, .7f));
 		scene.setOnSceneTouchListener(this);
 		scene.setTouchAreaBindingOnActionDownEnabled(true);
 		scene.registerUpdateHandler(this.mPhysicsWorld);
@@ -148,8 +144,8 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		
 		scene.registerUpdateHandler(mZombiePool);
 		
-		this.mScrollDetector = new SurfaceScrollDetector(this);
-		this.mPinchZoomDetector = new PinchZoomDetector(this);
+//		this.mScrollDetector = new SurfaceScrollDetector(this);
+//		this.mPinchZoomDetector = new PinchZoomDetector(this);
 		
 		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
 		
@@ -207,10 +203,11 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 					return zombie;
 				} else if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
 					Log.d("LevelLoader", "loading a player");
-					mAndroid = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
-					mZoomCamera.setCenter(x, y); // center camera on player
-					mZombiePool.setPlayer(mAndroid);
-					return mAndroid;
+					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
+					mAndroid = player;
+					mZoomCamera.setChaseEntity(player); // follow player
+					mZombiePool.setPlayer(player);
+					return player;
 				} else {
 					throw new IllegalArgumentException();
 				}
@@ -234,6 +231,7 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 		Log.d("LevelLoader", "creating wall. x:" + x + " y:" + y + " w:" + width + " h:" + height);
 		final FixtureDef wallFixtureDef = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
 		final Rectangle wall = new Rectangle(x, y, width, height, this.getVertexBufferObjectManager());
+		wall.setColor(Color.BLACK);
 		PhysicsFactory.createBoxBody(mPhysicsWorld, wall, BodyType.StaticBody, wallFixtureDef);
 		return wall;
 	}
@@ -278,16 +276,16 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
 //		From pinch zoom example
 //		-----------------------
-		this.mPinchZoomDetector.onTouchEvent(pSceneTouchEvent);
-
-		if(this.mPinchZoomDetector.isZooming()) {
-			this.mScrollDetector.setEnabled(false);
-		} else {
-			if(pSceneTouchEvent.isActionDown()) {
-				this.mScrollDetector.setEnabled(true);
-			}
-			this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
-		}
+//		this.mPinchZoomDetector.onTouchEvent(pSceneTouchEvent);
+//
+//		if(this.mPinchZoomDetector.isZooming()) {
+//			this.mScrollDetector.setEnabled(false);
+//		} else {
+//			if(pSceneTouchEvent.isActionDown()) {
+//				this.mScrollDetector.setEnabled(true);
+//			}
+//			this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
+//		}
 
 		return true;
 	}
@@ -309,38 +307,38 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	// Methods
 	// ===========================================================
 
-	@Override
-	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
-		final float zoomFactor = this.mZoomCamera.getZoomFactor();
-		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
-	}
-
-	@Override
-	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
-		final float zoomFactor = this.mZoomCamera.getZoomFactor();
-		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
-	}
-	
-	@Override
-	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
-		final float zoomFactor = this.mZoomCamera.getZoomFactor();
-		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
-	}
-
-	@Override
-	public void onPinchZoomStarted(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent) {
-		this.mPinchZoomStartedCameraZoomFactor = this.mZoomCamera.getZoomFactor();
-	}
-
-	@Override
-	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
-		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
-	}
-
-	@Override
-	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
-		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
-	}
+//	@Override
+//	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+//		final float zoomFactor = this.mZoomCamera.getZoomFactor();
+//		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+//	}
+//
+//	@Override
+//	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+//		final float zoomFactor = this.mZoomCamera.getZoomFactor();
+//		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+//	}
+//	
+//	@Override
+//	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+//		final float zoomFactor = this.mZoomCamera.getZoomFactor();
+//		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+//	}
+//
+//	@Override
+//	public void onPinchZoomStarted(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent) {
+//		this.mPinchZoomStartedCameraZoomFactor = this.mZoomCamera.getZoomFactor();
+//	}
+//
+//	@Override
+//	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+//		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+//	}
+//
+//	@Override
+//	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+//		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+//	}
 
 	// ===========================================================
 	// Inner and Anonymous Classes
