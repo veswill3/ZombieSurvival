@@ -34,7 +34,6 @@ import org.andengine.util.level.LevelLoader;
 import org.andengine.util.level.constants.LevelConstants;
 import org.xml.sax.Attributes;
 import android.opengl.GLES20;
-import android.util.Log;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
@@ -53,12 +52,13 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private static final int CAMERA_WIDTH = 800;
 	private static final int CAMERA_HEIGHT = 480;
 	
+	// collision filter bit categories and masks
 	public static final short CATEGORYBIT_WALL = 1;
 	public static final short MASKBITS_WALL = PhysicalSprite.CATEGORYBIT_ENEMY
 			+ PhysicalSprite.CATEGORYBIT_WALL + PhysicalSprite.CATEGORYBIT_PLAYER
 			+ PhysicalSprite.CATEGORYBIT_BULLET;
-	private final static FixtureDef WALL_FIXTUREDEF = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f,
-			false, CATEGORYBIT_WALL, MASKBITS_WALL, (short)0);
+	private final static FixtureDef WALL_FIXTUREDEF = PhysicsFactory.createFixtureDef(
+			0, 0.5f, 0.5f, false, CATEGORYBIT_WALL, MASKBITS_WALL, (short)0);
 	
 	// level loading related
 	private static final String TAG_ENTITY = "entity";
@@ -76,7 +76,6 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	// Fields
 	// ===========================================================
 
-	// camera related
 	private ZoomCamera mZoomCamera;
 	
 	// texture related
@@ -84,14 +83,13 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private BitmapTextureAtlas mOnScreenControlTexture;
 	private ITextureRegion mOnScreenControlBaseTextureRegion;
 	private ITextureRegion mOnScreenControlKnobTextureRegion;
-	
 	private ITextureRegion mAndroidTextureRegion;
+	
 	private ZombiePool mZombiePool;
 	private BulletPool mBulletPool;
 	
 	private Player mPlayer; //handle to "player" - android sprite
 
-	// physics related
 	private PhysicsWorld mPhysicsWorld;
 
 	// ===========================================================
@@ -176,17 +174,14 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 			
 			@Override
 			public void postSolve(Contact contact, ContactImpulse impulse) {
-				// TODO Auto-generated method stub
 			}
 			
 			@Override
 			public void endContact(Contact contact) {
-				// TODO Auto-generated method stub
 			}
 			
 			@Override
 			public void beginContact(Contact contact) {
-				// TODO Auto-generated method stub
 			}
 		});
 		
@@ -203,7 +198,6 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 			public IEntity onLoadEntity(final String pEntityName, final Attributes pAttributes) {
 				final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_WIDTH);
 				final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, LevelConstants.TAG_LEVEL_ATTRIBUTE_HEIGHT);
-				Log.d("LevelLoader", "about to create borders");
 				// right
 				scene.attachChild(createWall(width - 2, 0, 2, height));
 				// left
@@ -222,7 +216,6 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		levelLoader.registerEntityLoader(TAG_WALL, new IEntityLoader() {
 			@Override
 			public IEntity onLoadEntity(final String pEntityName, final Attributes pAttributes) {
-				Log.d("LevelLoader", "About to load a wall");
 				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_X);
 				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
 				final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_WIDTH);
@@ -235,7 +228,6 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		levelLoader.registerEntityLoader(TAG_ENTITY, new IEntityLoader() {
 			@Override
 			public IEntity onLoadEntity(final String pEntityName, final Attributes pAttributes) {
-				Log.d("LevelLoader", "About to load an entity");
 				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_X);
 				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
 				final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_TYPE);
@@ -243,12 +235,10 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 				final VertexBufferObjectManager vertexBufferObjectManager = GameActivity.this.getVertexBufferObjectManager();
 
 				if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE)) {
-					Log.d("LevelLoader", "loading a zombie");
 					Zombie zombie = mZombiePool.obtain(x, y);
 					scene.registerTouchArea(zombie);
 					return zombie;
 				} else if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
-					Log.d("LevelLoader", "loading a player");
 					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
 					mPlayer = player;
 					mZoomCamera.setChaseEntity(player); // follow player
@@ -261,9 +251,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		});
 
 		try {
-			Log.d("LevelLoader", "about to start loading");
 			levelLoader.loadLevelFromAsset(this.getAssets(), "testLevel.xml");
-			Log.d("LevelLoader", "finished loading the level, I guess");
 		} catch (final IOException e) {
 			Debug.e(e);
 		}
@@ -274,7 +262,6 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	}
 
 	protected IEntity createWall(int x, int y, int width, int height) {
-		Log.d("LevelLoader", "creating wall. x:" + x + " y:" + y + " w:" + width + " h:" + height);
 		final Rectangle wall = new Rectangle(x, y, width, height, this.getVertexBufferObjectManager());
 		wall.setColor(Color.BLACK);
 		PhysicsFactory.createBoxBody(mPhysicsWorld, wall, BodyType.StaticBody, WALL_FIXTUREDEF).setUserData(wall);
@@ -316,11 +303,11 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	@Override
 	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
 		
-		if (pSceneTouchEvent.isActionDown() || pSceneTouchEvent.isActionMove()) {
+		if (pSceneTouchEvent.isActionDown()) {
 			float x = mPlayer.getX();
 			float y = mPlayer.getY();
-			Bullet b = mBulletPool.obtain(x, y,
-					new Vector2(pSceneTouchEvent.getX(), pSceneTouchEvent.getY()).sub(x, y));
+			Bullet b = mBulletPool.obtain(x, y, new Vector2(
+					pSceneTouchEvent.getX(), pSceneTouchEvent.getY()).sub(x, y));
 			pScene.attachChild(b);
 		}
 		
@@ -335,7 +322,6 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	@Override
 	public void onPauseGame() {
 		super.onPauseGame();
-		this.disableAccelerationSensor();
 	}
 
 	// ===========================================================
