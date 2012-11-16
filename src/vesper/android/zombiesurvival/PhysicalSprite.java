@@ -32,7 +32,7 @@ public class PhysicalSprite extends Sprite {
 		Body body = PhysicsFactory.createCircleBody(pPhysicsWorld, this, BodyType.DynamicBody, pFixtureDef);
 		body.setActive(false); // initially start inactive until we add it to the world
 		body.setUserData(this);
-		pPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(this, body, true, true));
+		pPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(this, body, true, false));
 		mBody = body;
 	}
 	

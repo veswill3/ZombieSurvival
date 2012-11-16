@@ -44,17 +44,14 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public class TestActivity extends SimpleBaseGameActivity implements //IAccelerationListener,
-																	IOnSceneTouchListener,
+public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouchListener,
 																	IOnAreaTouchListener {
-																	//IScrollDetectorListener,
-																	//IPinchZoomDetectorListener {
 	// ===========================================================
 	// Constants
 	// ===========================================================
 
-	private static final int DEFAULT_CAMERA_WIDTH = 800;
-	private static final int DEFAULT_CAMERA_HEIGHT = 480;
+	private static final int CAMERA_WIDTH = 800;
+	private static final int CAMERA_HEIGHT = 480;
 	
 	public static final short CATEGORYBIT_WALL = 1;
 	public static final short MASKBITS_WALL = PhysicalSprite.CATEGORYBIT_ENEMY
@@ -81,9 +78,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	// camera related
 	private ZoomCamera mZoomCamera;
-//	private SurfaceScrollDetector mScrollDetector;
-//	private PinchZoomDetector mPinchZoomDetector;
-//	private float mPinchZoomStartedCameraZoomFactor;
 	
 	// texture related
 	private BitmapTextureAtlas mBitmapTextureAtlas;
@@ -95,7 +89,7 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	private ZombiePool mZombiePool;
 	private BulletPool mBulletPool;
 	
-	private Player mAndroid; //handle to "player" - android sprite
+	private Player mPlayer; //handle to "player" - android sprite
 
 	// physics related
 	private PhysicsWorld mPhysicsWorld;
@@ -114,9 +108,9 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
-		this.mZoomCamera = new ZoomCamera(0, 0, DEFAULT_CAMERA_WIDTH, DEFAULT_CAMERA_HEIGHT);
+		this.mZoomCamera = new ZoomCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
 		return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED,
-				new RatioResolutionPolicy(DEFAULT_CAMERA_WIDTH, DEFAULT_CAMERA_HEIGHT), mZoomCamera);
+				new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), mZoomCamera);
 	}
 
 	@Override
@@ -183,27 +177,21 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 			@Override
 			public void postSolve(Contact contact, ContactImpulse impulse) {
 				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public void endContact(Contact contact) {
 				// TODO Auto-generated method stub
-				
 			}
 			
 			@Override
 			public void beginContact(Contact contact) {
 				// TODO Auto-generated method stub
-				
 			}
 		});
 		
 		scene.registerUpdateHandler(mZombiePool);
 		scene.registerUpdateHandler(mBulletPool);
-		
-//		this.mScrollDetector = new SurfaceScrollDetector(this);
-//		this.mPinchZoomDetector = new PinchZoomDetector(this);
 		
 		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
 		
@@ -252,7 +240,7 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
 				final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_TYPE);
 
-				final VertexBufferObjectManager vertexBufferObjectManager = TestActivity.this.getVertexBufferObjectManager();
+				final VertexBufferObjectManager vertexBufferObjectManager = GameActivity.this.getVertexBufferObjectManager();
 
 				if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE)) {
 					Log.d("LevelLoader", "loading a zombie");
@@ -262,7 +250,7 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 				} else if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
 					Log.d("LevelLoader", "loading a player");
 					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
-					mAndroid = player;
+					mPlayer = player;
 					mZoomCamera.setChaseEntity(player); // follow player
 					mZombiePool.setPlayer(player);
 					return player;
@@ -295,20 +283,16 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 
 	private void initOnScreenControls(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager) {
 		final AnalogOnScreenControl analogOnScreenControl =
-				new AnalogOnScreenControl(0, DEFAULT_CAMERA_HEIGHT - mOnScreenControlBaseTextureRegion.getHeight(),
+				new AnalogOnScreenControl(0, CAMERA_HEIGHT - mOnScreenControlBaseTextureRegion.getHeight(),
 						mZoomCamera, mOnScreenControlBaseTextureRegion, mOnScreenControlKnobTextureRegion,
 						0.1f, vertexBufferObjectManager, new IAnalogOnScreenControlListener() {
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl,
 					final float pValueX, final float pValueY) {
-				final Body androidBody = mAndroid.getBody();
+				final Body androidBody = mPlayer.getBody();
 				final Vector2 velocity = Vector2Pool.obtain(pValueX * 20, pValueY * 20);
 				androidBody.setLinearVelocity(velocity);
 				Vector2Pool.recycle(velocity);
-
-				//final float rotationInRad = (float)Math.atan2(-pValueX, pValueY);
-				//androidBody.setTransform(androidBody.getWorldCenter(), rotationInRad);
-				//TestActivity.this.mAndroid.setRotation(MathUtils.radToDeg(rotationInRad));
 			}
 
 			@Override
@@ -333,35 +317,19 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
 		
 		if (pSceneTouchEvent.isActionDown() || pSceneTouchEvent.isActionMove()) {
-			Log.d("Bullet", "should be creating a bullet now...");
-			float x = mAndroid.getX();
-			float y = mAndroid.getY();
+			float x = mPlayer.getX();
+			float y = mPlayer.getY();
 			Bullet b = mBulletPool.obtain(x, y,
 					new Vector2(pSceneTouchEvent.getX(), pSceneTouchEvent.getY()).sub(x, y));
 			pScene.attachChild(b);
 		}
 		
-//		From pinch zoom example
-//		-----------------------
-//		this.mPinchZoomDetector.onTouchEvent(pSceneTouchEvent);
-//
-//		if(this.mPinchZoomDetector.isZooming()) {
-//			this.mScrollDetector.setEnabled(false);
-//		} else {
-//			if(pSceneTouchEvent.isActionDown()) {
-//				this.mScrollDetector.setEnabled(true);
-//			}
-//			this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
-//		}
-
 		return true;
 	}
 
 	@Override
 	public void onResumeGame() {
 		super.onResumeGame();
-
-		//this.enableAccelerationSensor(this);
 	}
 
 	@Override
@@ -373,39 +341,6 @@ public class TestActivity extends SimpleBaseGameActivity implements //IAccelerat
 	// ===========================================================
 	// Methods
 	// ===========================================================
-
-//	@Override
-//	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
-//		final float zoomFactor = this.mZoomCamera.getZoomFactor();
-//		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
-//	}
-//
-//	@Override
-//	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
-//		final float zoomFactor = this.mZoomCamera.getZoomFactor();
-//		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
-//	}
-//	
-//	@Override
-//	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
-//		final float zoomFactor = this.mZoomCamera.getZoomFactor();
-//		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
-//	}
-//
-//	@Override
-//	public void onPinchZoomStarted(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent) {
-//		this.mPinchZoomStartedCameraZoomFactor = this.mZoomCamera.getZoomFactor();
-//	}
-//
-//	@Override
-//	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
-//		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
-//	}
-//
-//	@Override
-//	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
-//		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
-//	}
 
 	// ===========================================================
 	// Inner and Anonymous Classes
