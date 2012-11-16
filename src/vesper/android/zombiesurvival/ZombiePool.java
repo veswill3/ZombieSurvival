@@ -5,20 +5,16 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
-
 import android.util.Log;
 
 public class ZombiePool extends EntityPool<Zombie> {
 	
-	private final VertexBufferObjectManager mVertexBufferObjectManager;
 	private Player mPlayer;
 
 	public ZombiePool(BaseGameActivity activity, PhysicsWorld physicsWorld)
 			throws IllegalArgumentException {
 		super(activity, physicsWorld);
-		mVertexBufferObjectManager = activity.getVertexBufferObjectManager();
 	}
 	
 	public Zombie obtain(float x, float y) {

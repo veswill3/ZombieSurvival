@@ -12,6 +12,11 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
 public class PhysicalSprite extends Sprite {
 	
+	public static final short CATEGORYBIT_WALL = 1;
+	public static final short CATEGORYBIT_PLAYER = 2;
+	public static final short CATEGORYBIT_ENEMY = 4;
+	public static final short CATEGORYBIT_BULLET = 8;
+	
 	private final Body mBody;
 
 	public PhysicalSprite(float pX, float pY, ITextureRegion pTextureRegion,
@@ -26,6 +31,7 @@ public class PhysicalSprite extends Sprite {
 		// setup the physics
 		Body body = PhysicsFactory.createCircleBody(pPhysicsWorld, this, BodyType.DynamicBody, pFixtureDef);
 		body.setActive(false); // initially start inactive until we add it to the world
+		body.setUserData(this);
 		pPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(this, body, true, true));
 		mBody = body;
 	}
@@ -34,6 +40,9 @@ public class PhysicalSprite extends Sprite {
 		setIgnoreUpdate(!activeFlag);
 		mBody.setActive(activeFlag);
 		this.setVisible(activeFlag);
+		if (!activeFlag) {
+			this.detachSelf();
+		}
 	}
 	
 	public Body getBody() {
