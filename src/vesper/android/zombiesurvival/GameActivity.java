@@ -304,8 +304,8 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
 		
 		if (pSceneTouchEvent.isActionDown()) {
-			float x = mPlayer.getX();
-			float y = mPlayer.getY();
+			float x = mPlayer.getX() + 16; // adjusting to center of sprite
+			float y = mPlayer.getY() + 16; // TODO - fix this
 			Bullet b = mBulletPool.obtain(x, y, new Vector2(
 					pSceneTouchEvent.getX(), pSceneTouchEvent.getY()).sub(x, y));
 			pScene.attachChild(b);
