@@ -110,8 +110,10 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		this.mZoomCamera = new ZoomCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-		return new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED,
+		EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED,
 				new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), mZoomCamera);
+		engineOptions.getTouchOptions().setNeedsMultiTouch(true);
+		return engineOptions;
 	}
 
 	@Override
