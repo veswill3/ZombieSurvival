@@ -5,7 +5,6 @@ import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl.IAnalogOnScreenControlListener;
-import org.andengine.engine.handler.physics.PhysicsHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -33,7 +32,6 @@ import org.andengine.util.debug.Debug;
 import org.andengine.util.level.IEntityLoader;
 import org.andengine.util.level.LevelLoader;
 import org.andengine.util.level.constants.LevelConstants;
-import org.andengine.util.math.MathUtils;
 import org.xml.sax.Attributes;
 import android.opengl.GLES20;
 import com.badlogic.gdx.math.Vector2;
@@ -91,6 +89,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private BulletPool mBulletPool;
 	
 	private Player mPlayer; //handle to "player" - android sprite
+	private Scene mScene;
 
 	private PhysicsWorld mPhysicsWorld;
 	private boolean mPlaceOnScreenControlsAtDifferentVerticalLocations = false;
@@ -145,6 +144,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		this.mEngine.registerUpdateHandler(new FPSLogger());
 
 		final Scene scene = new Scene();
+		mScene = scene;
 		scene.setOnAreaTouchTraversalFrontToBack();
 		scene.setBackground(new Background(.7f, .7f, .7f));
 		scene.setOnSceneTouchListener(this);
@@ -279,12 +279,10 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 
 	private void initOnScreenControlsTest(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager ){
 		/* Velocity control (left). */
-		final PhysicsHandler physicsHandler = new PhysicsHandler(mPlayer);
 		final float x1 = 0;
 		final float y1 = CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight();
 		final AnalogOnScreenControl 
-		velocityOnScreenControl = new AnalogOnScreenControl
-		(x1, y1, this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, 
+		velocityOnScreenControl = new AnalogOnScreenControl(x1, y1, this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, 
 				this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
@@ -312,9 +310,12 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
 				if(pValueX == x1 && pValueY == x1) {
-					mPlayer.setRotation(x1);
+					// do nothing
 				} else {
-					mPlayer.setRotation(MathUtils.radToDeg((float)Math.atan2(pValueX, -pValueY)));
+					float x = mPlayer.getX() + 16; // adjusting to center of sprite
+					float y = mPlayer.getY() + 16; // TODO - fix this
+					Bullet b = mBulletPool.obtain(x, y, new Vector2(pValueX, pValueY));
+					mScene.attachChild(b);
 				}
 			}
 
@@ -336,15 +337,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 
 	@Override
 	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
-		
-		if (pSceneTouchEvent.isActionDown()) {
-			float x = mPlayer.getX() + 16; // adjusting to center of sprite
-			float y = mPlayer.getY() + 16; // TODO - fix this
-			Bullet b = mBulletPool.obtain(x, y, new Vector2(
-					pSceneTouchEvent.getX(), pSceneTouchEvent.getY()).sub(x, y));
-			pScene.attachChild(b);
-		}
-		
+		// nothing yet
 		return true;
 	}
 
