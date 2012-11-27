@@ -5,6 +5,7 @@ import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl.IAnalogOnScreenControlListener;
+import org.andengine.engine.handler.physics.PhysicsHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -32,6 +33,7 @@ import org.andengine.util.debug.Debug;
 import org.andengine.util.level.IEntityLoader;
 import org.andengine.util.level.LevelLoader;
 import org.andengine.util.level.constants.LevelConstants;
+import org.andengine.util.math.MathUtils;
 import org.xml.sax.Attributes;
 import android.opengl.GLES20;
 import com.badlogic.gdx.math.Vector2;
@@ -91,6 +93,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private Player mPlayer; //handle to "player" - android sprite
 
 	private PhysicsWorld mPhysicsWorld;
+	private boolean mPlaceOnScreenControlsAtDifferentVerticalLocations = false;
 
 	// ===========================================================
 	// Constructors
@@ -256,7 +259,9 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 			Debug.e(e);
 		}
 		
-		initOnScreenControls(scene, vertexBufferObjectManager);
+		//final PhysicsHandler physicsHandler = new PhysicsHandler(mPlayer);
+		
+		initOnScreenControlsTest(scene, vertexBufferObjectManager);
 		
 		return scene;
 	}
@@ -268,14 +273,19 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		return wall;
 	}
 
-	private void initOnScreenControls(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager) {
-		final AnalogOnScreenControl analogOnScreenControl =
-				new AnalogOnScreenControl(0, CAMERA_HEIGHT - mOnScreenControlBaseTextureRegion.getHeight(),
-						mZoomCamera, mOnScreenControlBaseTextureRegion, mOnScreenControlKnobTextureRegion,
-						0.1f, vertexBufferObjectManager, new IAnalogOnScreenControlListener() {
+	
+
+	private void initOnScreenControlsTest(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager ){
+		/* Velocity control (left). */
+		final PhysicsHandler physicsHandler = new PhysicsHandler(mPlayer);
+		final float x1 = 0;
+		final float y1 = CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight();
+		final AnalogOnScreenControl 
+		velocityOnScreenControl = new AnalogOnScreenControl
+		(x1, y1, this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, 
+				this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
 			@Override
-			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl,
-					final float pValueX, final float pValueY) {
+			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
 				final Body androidBody = mPlayer.getBody();
 				final Vector2 velocity = Vector2Pool.obtain(pValueX * 20, pValueY * 20);
 				androidBody.setLinearVelocity(velocity);
@@ -287,13 +297,35 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 				/* Nothing. */
 			}
 		});
-		analogOnScreenControl.getControlBase().setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-		analogOnScreenControl.getControlBase().setAlpha(0.5f);
-		analogOnScreenControl.refreshControlKnobPosition();
+		velocityOnScreenControl.getControlBase().setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		velocityOnScreenControl.getControlBase().setAlpha(0.5f);
 
-		scene.setChildScene(analogOnScreenControl);
+		scene.setChildScene(velocityOnScreenControl);
+
+
+		/* Rotation control (right). */
+		final float y2 = (this.mPlaceOnScreenControlsAtDifferentVerticalLocations) ? 0 : y1;
+		final float x2 = CAMERA_WIDTH - this.mOnScreenControlBaseTextureRegion.getWidth();
+		final AnalogOnScreenControl rotationOnScreenControl = new AnalogOnScreenControl(x2, y2, this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
+			@Override
+			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
+				if(pValueX == x1 && pValueY == x1) {
+					mPlayer.setRotation(x1);
+				} else {
+					mPlayer.setRotation(MathUtils.radToDeg((float)Math.atan2(pValueX, -pValueY)));
+				}
+			}
+
+			@Override
+			public void onControlClick(final AnalogOnScreenControl pAnalogOnScreenControl) {
+				/* Nothing. */
+			}
+		});
+		rotationOnScreenControl.getControlBase().setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+		rotationOnScreenControl.getControlBase().setAlpha(0.5f);
+
+		velocityOnScreenControl.setChildScene(rotationOnScreenControl);
 	}
-
 	@Override
 	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea,
 			final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
