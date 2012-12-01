@@ -92,7 +92,6 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private Scene mScene;
 
 	private PhysicsWorld mPhysicsWorld;
-	private boolean mPlaceOnScreenControlsAtDifferentVerticalLocations = false;
 
 	// ===========================================================
 	// Constructors
@@ -279,8 +278,8 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 
 	private void initOnScreenControlsTest(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager ){
 		/* Velocity control (left). */
-		final float x1 = 0;
-		final float y1 = CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight();
+		final float x1 = (float) (.5 * this.mOnScreenControlBaseTextureRegion.getWidth());
+		final float y1 = (float) (CAMERA_HEIGHT - (this.mOnScreenControlBaseTextureRegion.getHeight() * 1.5));
 		final AnalogOnScreenControl 
 		velocityOnScreenControl = new AnalogOnScreenControl(x1, y1, this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, 
 				this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
@@ -303,13 +302,13 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		scene.setChildScene(velocityOnScreenControl);
 
 
-		/* Rotation control (right). */
-		final float y2 = (this.mPlaceOnScreenControlsAtDifferentVerticalLocations) ? 0 : y1;
-		final float x2 = CAMERA_WIDTH - this.mOnScreenControlBaseTextureRegion.getWidth();
+		/* Weapon control (right). */
+		final float y2 = y1;
+		final float x2 = (float) (CAMERA_WIDTH - (this.mOnScreenControlBaseTextureRegion.getWidth() * 1.5));
 		final AnalogOnScreenControl rotationOnScreenControl = new AnalogOnScreenControl(x2, y2, this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
-				if(pValueX == x1 && pValueY == x1) {
+				if(pValueX == 0 && pValueY == 0) {
 					// do nothing
 				} else {
 					float x = mPlayer.getX() + 16; // adjusting to center of sprite
