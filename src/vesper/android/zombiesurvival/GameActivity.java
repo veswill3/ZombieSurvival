@@ -54,9 +54,9 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	
 	// collision filter bit categories and masks
 	public static final short CATEGORYBIT_WALL = 1;
-	public static final short MASKBITS_WALL = PhysicalSprite.CATEGORYBIT_ENEMY
-			+ PhysicalSprite.CATEGORYBIT_WALL + PhysicalSprite.CATEGORYBIT_PLAYER
-			+ PhysicalSprite.CATEGORYBIT_BULLET;
+	public static final short MASKBITS_WALL = PhysicalGameObject.CATEGORYBIT_ENEMY
+			+ PhysicalGameObject.CATEGORYBIT_WALL + PhysicalGameObject.CATEGORYBIT_PLAYER
+			+ PhysicalGameObject.CATEGORYBIT_BULLET;
 	private final static FixtureDef WALL_FIXTUREDEF = PhysicsFactory.createFixtureDef(
 			0, 0.5f, 0.5f, false, CATEGORYBIT_WALL, MASKBITS_WALL, (short)0);
 	

@@ -11,22 +11,22 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public class Zombie extends PhysicalSprite {
+public class Zombie extends Enemy {
 	
 	public static final short MASKBITS_ZOMBIE = CATEGORYBIT_ENEMY + CATEGORYBIT_WALL + CATEGORYBIT_BULLET + CATEGORYBIT_PLAYER;
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
 			CATEGORYBIT_ENEMY, MASKBITS_ZOMBIE, (short)0);
 	
 	private static final int SMELL_RADIUS = 100;
-	private final Entity mPlayer;
+	
 	
 	public Zombie(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,
 			PhysicsWorld pPhysicsWorld, Entity player) {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager,
-				pPhysicsWorld, mFixtureDef);
+				pPhysicsWorld, mFixtureDef, player);
 		
-		mPlayer = player;
+		
 
 		registerUpdateHandler(new IUpdateHandler() {
 			

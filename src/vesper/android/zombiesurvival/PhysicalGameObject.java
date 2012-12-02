@@ -10,7 +10,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
-public class PhysicalSprite extends Sprite {
+public class PhysicalGameObject extends Sprite {
 	
 	public static final short CATEGORYBIT_WALL = 1;
 	public static final short CATEGORYBIT_PLAYER = 2;
@@ -19,7 +19,7 @@ public class PhysicalSprite extends Sprite {
 	
 	private final Body mBody;
 
-	public PhysicalSprite(float pX, float pY, ITextureRegion pTextureRegion,
+	public PhysicalGameObject(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,
 			PhysicsWorld pPhysicsWorld, FixtureDef pFixtureDef) {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager);

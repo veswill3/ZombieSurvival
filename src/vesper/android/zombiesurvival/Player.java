@@ -7,7 +7,9 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public class Player extends PhysicalSprite {
+public class Player extends Character {
+	
+	Weapon mWeapon;
 
 	public static final short MASKBITS_PLAYER = CATEGORYBIT_ENEMY + CATEGORYBIT_WALL + CATEGORYBIT_PLAYER;
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
