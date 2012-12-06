@@ -19,6 +19,10 @@ public class Player extends Character {
 			VertexBufferObjectManager pVertexBufferObjectManager,
 			PhysicsWorld pPhysicsWorld) {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager, pPhysicsWorld, mFixtureDef);
+		
+		// start with a pistol
+		mWeapon = new Pistol();
+		
 		setActive(true);
 	}
 
