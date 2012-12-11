@@ -5,6 +5,8 @@ import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl.IAnalogOnScreenControlListener;
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -15,6 +17,7 @@ import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.ITouchArea;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
@@ -25,7 +28,7 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
-import org.andengine.ui.activity.SimpleBaseGameActivity;
+import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.SAXUtils;
 import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
@@ -43,7 +46,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouchListener,
+public class GameActivity extends BaseGameActivity implements IOnSceneTouchListener,
 																	IOnAreaTouchListener {
 	// ===========================================================
 	// Constants
@@ -51,6 +54,14 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 
 	private static final int CAMERA_WIDTH = 800;
 	private static final int CAMERA_HEIGHT = 480;
+	private ZoomCamera mZoomCamera;
+	
+	private Scene mSplashScene;
+	private Scene mGameScene;
+	
+	private BitmapTextureAtlas splashTextureAtlas;
+	private ITextureRegion splashTextureRegion;
+	private Sprite splash;
 	
 	// collision filter bit categories and masks
 	public static final short CATEGORYBIT_WALL = 1;
@@ -68,15 +79,8 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private static final String TAG_ATTRIBUTE_WIDTH = "width";
 	private static final String TAG_ATTRIBUTE_HEIGHT = "height";
 	private static final String TAG_ATTRIBUTE_TYPE = "type";
-
 	private static final String TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE = "zombie";
 	private static final String TAG_ATTRIBUTE_TYPE_VALUE_PLAYER = "player";
-
-	// ===========================================================
-	// Fields
-	// ===========================================================
-
-	private ZoomCamera mZoomCamera;
 	
 	// texture related
 	private BitmapTextureAtlas mBitmapTextureAtlas;
@@ -88,22 +92,9 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	private ZombiePool mZombiePool;
 	private BulletPool mBulletPool;
 	
-	private Player mPlayer; //handle to "player" - android sprite
-	private Scene mScene;
+	private Player mPlayer;
 
 	private PhysicsWorld mPhysicsWorld;
-
-	// ===========================================================
-	// Constructors
-	// ===========================================================
-
-	// ===========================================================
-	// Getter & Setter
-	// ===========================================================
-
-	// ===========================================================
-	// Methods for/from SuperClass/Interfaces
-	// ===========================================================
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -115,7 +106,68 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 	}
 
 	@Override
-	public void onCreateResources() {
+	public void onCreateResources(OnCreateResourcesCallback pOnCreateResourcesCallback) throws Exception {
+		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		splashTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.DEFAULT);
+		splashTextureRegion =BitmapTextureAtlasTextureRegionFactory.createFromAsset(splashTextureAtlas, this,"splash.png", 0, 0);
+		splashTextureAtlas.load();
+		pOnCreateResourcesCallback.onCreateResourcesFinished();
+	}
+
+	@Override
+	public void onCreateScene(OnCreateSceneCallback pOnCreateSceneCallback) throws Exception {
+		initSplashScene();
+	    pOnCreateSceneCallback.onCreateSceneFinished(this.mSplashScene);
+	}
+
+	@Override
+	public void onPopulateScene(Scene pScene, OnPopulateSceneCallback pOnPopulateSceneCallback) throws Exception {
+		mEngine.registerUpdateHandler(new TimerHandler(.1f, new ITimerCallback() {
+			public void onTimePassed(final TimerHandler pTimerHandler) {
+				mEngine.unregisterUpdateHandler(pTimerHandler);
+				loadResources();
+				loadScenes();         
+				splash.detachSelf();
+				mEngine.setScene(mGameScene);
+			}
+		}));
+		pOnPopulateSceneCallback.onPopulateSceneFinished();
+	}
+
+	@Override
+	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea,
+			final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+		return pTouchArea.onAreaTouched(pSceneTouchEvent, pTouchAreaLocalX, pTouchAreaLocalY);
+	}
+
+	@Override
+	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
+		// nothing yet
+		return true;
+	}
+
+	@Override
+	public void onResumeGame() {
+		super.onResumeGame();
+	}
+
+	@Override
+	public void onPauseGame() {
+		super.onPauseGame();
+	}
+
+	private void initSplashScene()
+	{
+		mSplashScene = new Scene();
+	    splash = new Sprite(0, 0, splashTextureRegion, mEngine.getVertexBufferObjectManager());
+	    splash.setScale(1.5f);
+		splash.setPosition((CAMERA_WIDTH - splash.getWidth()) * 0.5f, (CAMERA_HEIGHT-splash.getHeight()) * 0.5f);
+		mSplashScene.attachChild(splash);
+	}
+	
+	public void loadResources() 
+	{
+		// Load your game resources here!
 		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
 		
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
@@ -137,13 +189,14 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 				this.mOnScreenControlTexture, this, "onscreen_control_knob.png", 128, 0);
 		this.mOnScreenControlTexture.load();
 	}
-
-	@Override
-	public Scene onCreateScene() {
+	
+	private void loadScenes()
+	{
+		// load your game here, you scenes
 		this.mEngine.registerUpdateHandler(new FPSLogger());
-
+	
 		final Scene scene = new Scene();
-		mScene = scene;
+		mGameScene = scene;
 		scene.setOnAreaTouchTraversalFrontToBack();
 		scene.setBackground(new Background(.7f, .7f, .7f));
 		scene.setOnSceneTouchListener(this);
@@ -159,7 +212,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 			            contact.getFixtureA().getBody().getUserData(),
 			            contact.getFixtureB().getBody().getUserData() 
 			        };
-
+	
 		        if (userDataArray[0] != null && userDataArray[1] != null) {
 		            if (userDataArray[0] instanceof Bullet && userDataArray[1] instanceof Zombie) {
 		            	mBulletPool.recycle((Bullet) userDataArray[0]);
@@ -196,7 +249,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		
 		final LevelLoader levelLoader = new LevelLoader();
 		levelLoader.setAssetBasePath("level/");
-
+	
 		levelLoader.registerEntityLoader(LevelConstants.TAG_LEVEL, new IEntityLoader() {
 			@Override
 			public IEntity onLoadEntity(final String pEntityName, final Attributes pAttributes) {
@@ -224,7 +277,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
 				final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_WIDTH);
 				final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_HEIGHT);
-
+	
 				return createWall(x, y, width, height);
 			}
 		});
@@ -235,9 +288,9 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_X);
 				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
 				final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_TYPE);
-
+	
 				final VertexBufferObjectManager vertexBufferObjectManager = GameActivity.this.getVertexBufferObjectManager();
-
+	
 				if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE)) {
 					Zombie zombie = mZombiePool.obtain(x, y);
 					scene.registerTouchArea(zombie);
@@ -253,7 +306,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 				}
 			}
 		});
-
+	
 		try {
 			levelLoader.loadLevelFromAsset(this.getAssets(), "testLevel.xml");
 		} catch (final IOException e) {
@@ -263,18 +316,7 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		//final PhysicsHandler physicsHandler = new PhysicsHandler(mPlayer);
 		
 		initOnScreenControlsTest(scene, vertexBufferObjectManager);
-		
-		return scene;
 	}
-
-	protected IEntity createWall(int x, int y, int width, int height) {
-		final Rectangle wall = new Rectangle(x, y, width, height, this.getVertexBufferObjectManager());
-		wall.setColor(Color.BLACK);
-		PhysicsFactory.createBoxBody(mPhysicsWorld, wall, BodyType.StaticBody, WALL_FIXTUREDEF).setUserData(wall);
-		return wall;
-	}
-
-	
 
 	private void initOnScreenControlsTest(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager ){
 		/* Velocity control (left). */
@@ -285,12 +327,12 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 				this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
-				final Body androidBody = mPlayer.getBody();
-				final Vector2 velocity = Vector2Pool.obtain(pValueX * 20, pValueY * 20);
-				androidBody.setLinearVelocity(velocity);
+				final Body body = mPlayer.getBody();
+				final Vector2 velocity = Vector2Pool.obtain(pValueX * 10, pValueY * 10);
+				body.setLinearVelocity(velocity);
 				Vector2Pool.recycle(velocity);
 			}
-
+	
 			@Override
 			public void onControlClick(final AnalogOnScreenControl pAnalogOnScreenControl) {
 				/* Nothing. */
@@ -298,10 +340,10 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		});
 		velocityOnScreenControl.getControlBase().setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 		velocityOnScreenControl.getControlBase().setAlpha(0.5f);
-
+	
 		scene.setChildScene(velocityOnScreenControl);
-
-
+	
+	
 		/* Weapon control (right). */
 		final float y2 = y1;
 		final float x2 = (float) (CAMERA_WIDTH - (this.mOnScreenControlBaseTextureRegion.getWidth() * 1.5));
@@ -314,10 +356,10 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 					float x = mPlayer.getX() + 16; // adjusting to center of sprite
 					float y = mPlayer.getY() + 16; // TODO - fix this
 					Bullet b = mBulletPool.obtain(x, y, new Vector2(pValueX, pValueY));
-					mScene.attachChild(b);
+					mGameScene.attachChild(b);
 				}
 			}
-
+	
 			@Override
 			public void onControlClick(final AnalogOnScreenControl pAnalogOnScreenControl) {
 				/* Nothing. */
@@ -325,35 +367,17 @@ public class GameActivity extends SimpleBaseGameActivity implements IOnSceneTouc
 		});
 		rotationOnScreenControl.getControlBase().setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 		rotationOnScreenControl.getControlBase().setAlpha(0.5f);
-
+	
 		velocityOnScreenControl.setChildScene(rotationOnScreenControl);
 	}
-	@Override
-	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final ITouchArea pTouchArea,
-			final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
-		return pTouchArea.onAreaTouched(pSceneTouchEvent, pTouchAreaLocalX, pTouchAreaLocalY);
+
+	private IEntity createWall(int x, int y, int width, int height) {
+		final Rectangle wall = new Rectangle(x, y, width, height, this.getVertexBufferObjectManager());
+		wall.setColor(Color.BLACK);
+		PhysicsFactory.createBoxBody(mPhysicsWorld, wall, BodyType.StaticBody, WALL_FIXTUREDEF).setUserData(wall);
+		return wall;
 	}
-
-	@Override
-	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
-		// nothing yet
-		return true;
-	}
-
-	@Override
-	public void onResumeGame() {
-		super.onResumeGame();
-	}
-
-	@Override
-	public void onPauseGame() {
-		super.onPauseGame();
-	}
-
-	// ===========================================================
-	// Methods
-	// ===========================================================
-
+	
 	// ===========================================================
 	// Inner and Anonymous Classes
 	// ===========================================================
