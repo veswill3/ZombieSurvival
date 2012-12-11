@@ -146,16 +146,6 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 		return true;
 	}
 
-	@Override
-	public void onResumeGame() {
-		super.onResumeGame();
-	}
-
-	@Override
-	public void onPauseGame() {
-		super.onPauseGame();
-	}
-
 	private void initSplashScene()
 	{
 		mSplashScene = new Scene();
