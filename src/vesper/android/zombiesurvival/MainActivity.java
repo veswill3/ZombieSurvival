@@ -515,6 +515,10 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	public void removedObjectFromLevel(ILevelObject obj) {
 		mLevelObjectList.remove(obj);
 	}
+	
+	private void initOnScreenHUDItems(Scene scene, final VertexBufferObjectManager pVertexBufferObjectManager){
+		
+	}
 
 	@Override
 	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
