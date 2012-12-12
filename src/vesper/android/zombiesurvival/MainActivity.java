@@ -37,6 +37,7 @@ import org.andengine.util.level.LevelLoader;
 import org.andengine.util.level.constants.LevelConstants;
 import org.xml.sax.Attributes;
 import android.opengl.GLES20;
+import android.view.KeyEvent;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
@@ -55,6 +56,16 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private static final int CAMERA_WIDTH = 800;
 	private static final int CAMERA_HEIGHT = 480;
 	private ZoomCamera mZoomCamera;
+	
+	public enum SceneType {
+		SPLASH,
+		MENU,
+		OPTIONS,
+		LEVELSELECT,
+		GAME
+	}
+	
+	public SceneType currentScene = SceneType.SPLASH;
 	
 	private Scene mSplashScene;
 	private Scene mGameScene;
@@ -128,7 +139,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 				loadResources();
 				loadScenes();         
 				splash.detachSelf();
-				mEngine.setScene(mGameScene);
+				setScene(SceneType.GAME);
 			}
 		}));
 		pOnPopulateSceneCallback.onPopulateSceneFinished();
@@ -367,8 +378,61 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		PhysicsFactory.createBoxBody(mPhysicsWorld, wall, BodyType.StaticBody, WALL_FIXTUREDEF).setUserData(wall);
 		return wall;
 	}
+
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// handle the back key appropriately
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			switch (currentScene) {
+			case SPLASH:
+				// just ignore it
+				break;
+			case MENU:
+				finish();
+				break;
+			case OPTIONS:
+			case LEVELSELECT:
+				setScene(SceneType.MENU);
+			case GAME:
+				//setScene(SceneType.LEVELSELECT);
+				finish();
+				break;
+			default:
+				break;
+			}
+		}
+		return false;
+	}
 	
-	// ===========================================================
-	// Inner and Anonymous Classes
-	// ===========================================================
+	/**
+	 * Helper to switch to the specified type of scene
+	 * @param sceneType
+	 */
+	private void setScene(SceneType sceneType) {
+		switch (sceneType) {
+		case SPLASH:
+			mEngine.setScene(mSplashScene);
+			currentScene = SceneType.SPLASH;
+			break;
+// will be implemented soon
+//		case MENU:
+//			mEngine.setScene(mMenuScene);
+//			currentScene = SceneType.MENU;
+//			break;
+//		case OPTIONS:
+//			mEngine.setScene(mOptionsScene);
+//			currentScene = SceneType.OPTIONS;
+//			break;
+//		case LEVELSELECT:
+//			mEngine.setScene(mLevelSelectScene);
+//			currentScene = SceneType.LEVELSELECT;
+//			break;
+		case GAME:
+			mEngine.setScene(mGameScene);
+			currentScene = SceneType.GAME;
+			break;
+		default: // what?
+			break;
+		}
+	}
 }
