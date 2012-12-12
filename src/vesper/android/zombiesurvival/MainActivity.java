@@ -46,7 +46,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public class GameActivity extends BaseGameActivity implements IOnSceneTouchListener,
+public class MainActivity extends BaseGameActivity implements IOnSceneTouchListener,
 																	IOnAreaTouchListener {
 	// ===========================================================
 	// Constants
@@ -279,7 +279,7 @@ public class GameActivity extends BaseGameActivity implements IOnSceneTouchListe
 				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
 				final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_TYPE);
 	
-				final VertexBufferObjectManager vertexBufferObjectManager = GameActivity.this.getVertexBufferObjectManager();
+				final VertexBufferObjectManager vertexBufferObjectManager = MainActivity.this.getVertexBufferObjectManager();
 	
 				if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE)) {
 					Zombie zombie = mZombiePool.obtain(x, y);
