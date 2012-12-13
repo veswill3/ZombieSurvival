@@ -37,6 +37,7 @@ import org.andengine.util.level.LevelLoader;
 import org.andengine.util.level.constants.LevelConstants;
 import org.xml.sax.Attributes;
 import android.opengl.GLES20;
+import android.util.Log;
 import android.view.KeyEvent;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
@@ -48,10 +49,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class MainActivity extends BaseGameActivity implements IOnSceneTouchListener,
-																	IOnAreaTouchListener {
-	// ===========================================================
-	// Constants
-	// ===========================================================
+															  IOnAreaTouchListener {
 
 	private static final int CAMERA_WIDTH = 800;
 	private static final int CAMERA_HEIGHT = 480;
@@ -157,15 +155,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		return true;
 	}
 
-	private void initSplashScene()
-	{
-		mSplashScene = new Scene();
-	    splash = new Sprite(0, 0, splashTextureRegion, mEngine.getVertexBufferObjectManager());
-	    splash.setScale(1.5f);
-		splash.setPosition((CAMERA_WIDTH - splash.getWidth()) * 0.5f, (CAMERA_HEIGHT-splash.getHeight()) * 0.5f);
-		mSplashScene.attachChild(splash);
-	}
-	
 	public void loadResources() 
 	{
 		// Load your game resources here!
@@ -189,6 +178,33 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		this.mOnScreenControlKnobTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
 				this.mOnScreenControlTexture, this, "onscreen_control_knob.png", 128, 0);
 		this.mOnScreenControlTexture.load();
+	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		// handle the back key appropriately
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			switch (currentScene) {
+			case SPLASH:
+				// just ignore it
+				break;
+			case MENU:
+				finish();
+				break;
+			case OPTIONS:
+			case LEVELSELECT:
+				setScene(SceneType.MENU);
+			case GAME:
+				//setScene(SceneType.LEVELSELECT);
+				finish();
+				break;
+			default:
+				break;
+			}
+		} else if (keyCode == KeyEvent.KEYCODE_MENU) {
+			generateLevelXML(mGameScene);
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 	
 	private void loadScenes()
@@ -372,6 +388,15 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		velocityOnScreenControl.setChildScene(rotationOnScreenControl);
 	}
 
+	private void initSplashScene()
+	{
+		mSplashScene = new Scene();
+	    splash = new Sprite(0, 0, splashTextureRegion, mEngine.getVertexBufferObjectManager());
+	    splash.setScale(1.5f);
+		splash.setPosition((CAMERA_WIDTH - splash.getWidth()) * 0.5f, (CAMERA_HEIGHT-splash.getHeight()) * 0.5f);
+		mSplashScene.attachChild(splash);
+	}
+
 	private IEntity createWall(int x, int y, int width, int height) {
 		final Rectangle wall = new Rectangle(x, y, width, height, this.getVertexBufferObjectManager());
 		wall.setColor(Color.BLACK);
@@ -379,31 +404,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		return wall;
 	}
 
-	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		// handle the back key appropriately
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			switch (currentScene) {
-			case SPLASH:
-				// just ignore it
-				break;
-			case MENU:
-				finish();
-				break;
-			case OPTIONS:
-			case LEVELSELECT:
-				setScene(SceneType.MENU);
-			case GAME:
-				//setScene(SceneType.LEVELSELECT);
-				finish();
-				break;
-			default:
-				break;
-			}
-		}
-		return false;
-	}
-	
 	/**
 	 * Helper to switch to the specified type of scene
 	 * @param sceneType
@@ -434,5 +434,17 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		default: // what?
 			break;
 		}
+	}
+
+	private String generateLevelXML(Scene pScene) {
+		Log.d("temp load", "----");
+		IEntity entity;
+		for (int i = 0; i < pScene.getChildCount(); i++) {
+			entity = pScene.getChildByIndex(i);
+			if (entity instanceof ILevelObject<?>) {
+				Log.d("temp load", ((ILevelObject<?>) entity).saveToXML());
+			}
+		}
+		return null;
 	}
 }

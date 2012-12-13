@@ -11,7 +11,7 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public class Zombie extends Enemy {
+public class Zombie extends Enemy<Zombie> {
 	
 	public static final short MASKBITS_ZOMBIE = CATEGORYBIT_ENEMY + CATEGORYBIT_WALL + CATEGORYBIT_BULLET + CATEGORYBIT_PLAYER;
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
@@ -26,8 +26,6 @@ public class Zombie extends Enemy {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager,
 				pPhysicsWorld, mFixtureDef, player);
 		
-		
-
 		registerUpdateHandler(new IUpdateHandler() {
 			
 			@Override
@@ -59,6 +57,12 @@ public class Zombie extends Enemy {
 		getBody().setTransform(x / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT,
 				y / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT, 0);
 		return this;
+	}
+
+	@Override
+	public Zombie loadFromXML(String xml) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

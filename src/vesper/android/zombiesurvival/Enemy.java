@@ -7,7 +7,7 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public abstract class Enemy extends Character {
+public abstract class Enemy<T> extends Character<T> {
 	
 	protected final Entity mPlayer;
 

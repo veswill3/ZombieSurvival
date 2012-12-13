@@ -6,8 +6,8 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public abstract class Character extends PhysicalGameObject {
-	
+public abstract class Character<T> extends PhysicalGameObject implements ILevelObject<T> {
+
 	int mMaxSpeed;
 	int mHealth;
 
@@ -18,7 +18,20 @@ public abstract class Character extends PhysicalGameObject {
 				pFixtureDef);
 		// TODO Auto-generated constructor stub
 	}
-	
-	// TODO need to add abstract handler for if health is gone
 
+	@Override
+	public String getXMLType() {
+		return this.getClass().getSimpleName();
+	}
+
+	@Override
+	public String saveToXML() {
+		return "<entity x=\"" + getX() + "\" y=\"" + getY() + "\" type=\"" + getXMLType() + "\"/>";
+	}
+	
+	@Override
+	public void setLevelEditMode(boolean enable) {
+		// TODO Need to implement this
+	}
+	
 }
