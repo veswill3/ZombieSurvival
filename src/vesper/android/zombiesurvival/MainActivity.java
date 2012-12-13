@@ -91,6 +91,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private static final String TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE = "zombie";
 	private static final String TAG_ATTRIBUTE_TYPE_VALUE_PLAYER = "player";
 	
+	private Boolean mLevelEditModeEnabled = false;
+	
 	// texture related
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	private BitmapTextureAtlas mOnScreenControlTexture;
@@ -437,12 +439,14 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	}
 
 	private String generateLevelXML(Scene pScene) {
+		mLevelEditModeEnabled = !mLevelEditModeEnabled;
 		Log.d("temp load", "----");
 		IEntity entity;
 		for (int i = 0; i < pScene.getChildCount(); i++) {
 			entity = pScene.getChildByIndex(i);
 			if (entity instanceof ILevelObject<?>) {
 				Log.d("temp load", ((ILevelObject<?>) entity).saveToXML());
+				((ILevelObject<?>) entity).setLevelEditMode(mLevelEditModeEnabled);
 			}
 		}
 		return null;

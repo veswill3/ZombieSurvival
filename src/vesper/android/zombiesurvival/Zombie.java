@@ -6,6 +6,7 @@ import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
+import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import com.badlogic.gdx.math.Vector2;
@@ -18,7 +19,8 @@ public class Zombie extends Enemy<Zombie> {
 			CATEGORYBIT_ENEMY, MASKBITS_ZOMBIE, (short)0);
 	
 	private static final int SMELL_RADIUS = 100;
-	
+	private IUpdateHandler followPlayer;
+	private boolean mLevelEditFlag;
 	
 	public Zombie(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,
@@ -26,7 +28,7 @@ public class Zombie extends Enemy<Zombie> {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager,
 				pPhysicsWorld, mFixtureDef, player);
 		
-		registerUpdateHandler(new IUpdateHandler() {
+		followPlayer = new IUpdateHandler() {
 			
 			@Override
 			public void reset() {}
@@ -35,8 +37,9 @@ public class Zombie extends Enemy<Zombie> {
 			public void onUpdate(float pSecondsElapsed) {
 				followPlayer(mPlayer);
 			}
-		});
+		};
 		
+		onDisableLevelEditMode();
 	}
 	
 	/**
@@ -63,6 +66,32 @@ public class Zombie extends Enemy<Zombie> {
 	public Zombie loadFromXML(String xml) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	protected void onEnableLevelEditMode() {
+		unregisterUpdateHandler(followPlayer);
+		// make click and drag-able
+		mLevelEditFlag = true;
+	}
+
+	@Override
+	protected void onDisableLevelEditMode() {
+		registerUpdateHandler(followPlayer);
+		mLevelEditFlag = false;
+	}
+
+	@Override
+	public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
+			float pTouchAreaLocalX, float pTouchAreaLocalY) {
+		if (mLevelEditFlag) {
+			float x = pSceneTouchEvent.getX() / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT;
+			float y = pSceneTouchEvent.getY() / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT;
+			getBody().setTransform(x, y, 0);
+			getBody().setLinearVelocity(0f, 0f);
+			return true;
+		}
+		return super.onAreaTouched(pSceneTouchEvent, pTouchAreaLocalX, pTouchAreaLocalY);
 	}
 
 }

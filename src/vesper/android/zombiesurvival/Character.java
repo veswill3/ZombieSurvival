@@ -31,7 +31,14 @@ public abstract class Character<T> extends PhysicalGameObject implements ILevelO
 	
 	@Override
 	public void setLevelEditMode(boolean enable) {
-		// TODO Need to implement this
+		if (enable) {
+			onEnableLevelEditMode();
+		} else {
+			onDisableLevelEditMode();
+		}
 	}
 	
+	protected abstract void onEnableLevelEditMode();
+	
+	protected abstract void onDisableLevelEditMode();
 }

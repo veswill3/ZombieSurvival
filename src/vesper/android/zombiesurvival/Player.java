@@ -32,5 +32,17 @@ public class Player extends Character<Player> {
 		return this;
 	}
 
+	@Override
+	protected void onEnableLevelEditMode() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void onDisableLevelEditMode() {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 }
