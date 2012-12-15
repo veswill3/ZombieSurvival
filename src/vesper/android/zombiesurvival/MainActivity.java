@@ -100,10 +100,21 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	// texture related
 	private BitmapTextureAtlas mBitmapTextureAtlas;
+	private ITextureRegion mAndroidTextureRegion;
+	
+	private BitmapTextureAtlas mHealthTextureAtlas;
+	private ITextureRegion mHealthTextureRegion;
+	
+	private BitmapTextureAtlas mAmmoTextureAtlas;
+	private ITextureRegion mAmmoTextureRegion;
+	
+	
 	private BitmapTextureAtlas mOnScreenControlTexture;
 	private ITextureRegion mOnScreenControlBaseTextureRegion;
 	private ITextureRegion mOnScreenControlKnobTextureRegion;
-	private ITextureRegion mAndroidTextureRegion;
+	
+	private BitmapTextureAtlas mBackgroundTexture;
+	private ITextureRegion mBackgroundTextureRegion;
 	
 	private ZombiePool mZombiePool;
 	private BulletPool mBulletPool;
@@ -186,19 +197,24 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		mZombiePool = new ZombiePool(this, mPhysicsWorld);
 		mBulletPool = new BulletPool(this, mPhysicsWorld);
 		
-		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(),
-				32, 32, TextureOptions.BILINEAR);
-		this.mAndroidTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-				this.mBitmapTextureAtlas, this, "Android.png", 0, 0);
+		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 32, 32, TextureOptions.BILINEAR);
+		this.mAndroidTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, "Android.png", 0, 0);
 		this.mBitmapTextureAtlas.load();
 
-		this.mOnScreenControlTexture = new BitmapTextureAtlas(this.getTextureManager(),
-				256, 128, TextureOptions.BILINEAR);
+		this.mOnScreenControlTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 128, TextureOptions.BILINEAR);
 		this.mOnScreenControlBaseTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
 				this.mOnScreenControlTexture, this, "onscreen_control_base.png", 0, 0);
 		this.mOnScreenControlKnobTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
 				this.mOnScreenControlTexture, this, "onscreen_control_knob.png", 128, 0);
 		this.mOnScreenControlTexture.load();
+		
+		this.mHealthTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 16, 16, TextureOptions.BILINEAR);
+		this.mHealthTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mHealthTextureAtlas, this, "health.png", 0, 0);
+		this.mHealthTextureAtlas.load();
+		
+		this.mAmmoTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 16, 720, TextureOptions.BILINEAR);
+		this.mAmmoTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mAmmoTextureAtlas, this, "ammo.png", 0, 0);
+		this.mAmmoTextureAtlas.load();
 	}
 	
 	@Override
@@ -245,6 +261,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		scene.setTouchAreaBindingOnActionDownEnabled(true);
 		scene.registerUpdateHandler(this.mPhysicsWorld);
 		scene.setOnAreaTouchListener(this);
+		
+		final HUD hud = new HUD();
 		
 		mPhysicsWorld.setContactListener(new ContactListener() {
 			
@@ -357,9 +375,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			Debug.e(e);
 		}
 		
-		//final PhysicsHandler physicsHandler = new PhysicsHandler(mPlayer);
-		
 		initOnScreenControlsTest(scene, vertexBufferObjectManager);
+		initOnScreenHUD(hud, vertexBufferObjectManager);
 	}
 
 	private void initOnScreenControlsTest(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager ){
@@ -516,9 +533,12 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		mLevelObjectList.remove(obj);
 	}
 	
-	private void initOnScreenHUDItems(Scene scene, final VertexBufferObjectManager pVertexBufferObjectManager){
+	private void initOnScreenHUD(HUD hud, final VertexBufferObjectManager vertexBufferObjectManager){
+		final GameHUD gameHUD = new GameHUD(0, 0, mZoomCamera, mHealthTextureRegion, vertexBufferObjectManager);
 		
+		hud.attachChild(gameHUD);
 	}
+	
 
 	@Override
 	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
