@@ -26,6 +26,11 @@ import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.input.touch.detector.PinchZoomDetector;
+import org.andengine.input.touch.detector.PinchZoomDetector.IPinchZoomDetectorListener;
+import org.andengine.input.touch.detector.ScrollDetector;
+import org.andengine.input.touch.detector.ScrollDetector.IScrollDetectorListener;
+import org.andengine.input.touch.detector.SurfaceScrollDetector;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -52,11 +57,17 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class MainActivity extends BaseGameActivity implements IOnSceneTouchListener,
-															  IOnAreaTouchListener {
+															  IOnAreaTouchListener,
+															  IScrollDetectorListener,
+															  IPinchZoomDetectorListener {
 
 	private static final int CAMERA_WIDTH = 800;
 	private static final int CAMERA_HEIGHT = 480;
 	private ZoomCamera mZoomCamera;
+	private PinchZoomDetector mPinchZoomDetector;
+	private SurfaceScrollDetector mScrollDetector;
+	private float mPinchZoomStartedCameraZoomFactor;
+	private float mDefaultZoomFactor;
 	
 	public enum SceneType {
 		SPLASH,
@@ -84,7 +95,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			0, 0.5f, 0.5f, false, CATEGORYBIT_WALL, MASKBITS_WALL, (short)0);
 	
 	// level loading related
-	private Boolean mLevelEditModeEnabled = false;
+	private Boolean mLevelEditMode = false;
 	private ArrayList<ILevelObject> mLevelObjectList = new ArrayList<ILevelObject>();
 	
 	// texture related
@@ -105,6 +116,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		this.mZoomCamera = new ZoomCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
+		mDefaultZoomFactor = mZoomCamera.getZoomFactor();
 		EngineOptions engineOptions = new EngineOptions(true, ScreenOrientation.LANDSCAPE_FIXED,
 				new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), mZoomCamera);
 		engineOptions.getTouchOptions().setNeedsMultiTouch(true);
@@ -148,7 +160,19 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 
 	@Override
 	public boolean onSceneTouchEvent(final Scene pScene, final TouchEvent pSceneTouchEvent) {
-		// nothing yet
+		if (mLevelEditMode) {
+			// only allow pinch and scroll while in level edit mode
+			this.mPinchZoomDetector.onTouchEvent(pSceneTouchEvent);
+			if(this.mPinchZoomDetector.isZooming()) {
+				this.mScrollDetector.setEnabled(false);
+			} else {
+				if(pSceneTouchEvent.isActionDown()) {
+					this.mScrollDetector.setEnabled(true);
+				}
+				this.mScrollDetector.onTouchEvent(pSceneTouchEvent);
+			}
+		}
+
 		return true;
 	}
 
@@ -199,7 +223,9 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 				break;
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_MENU) {
+			// just some stuff for testing
 			generateLevelXML();
+			setLevelEditMode(!mLevelEditMode);
 		}
 		return super.onKeyDown(keyCode, event);
 	}
@@ -214,6 +240,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		scene.setOnAreaTouchTraversalFrontToBack();
 		scene.setBackground(new Background(.7f, .7f, .7f));
 		scene.setOnSceneTouchListener(this);
+		this.mScrollDetector = new SurfaceScrollDetector(this);
+		this.mPinchZoomDetector = new PinchZoomDetector(this);
 		scene.setTouchAreaBindingOnActionDownEnabled(true);
 		scene.registerUpdateHandler(this.mPhysicsWorld);
 		scene.setOnAreaTouchListener(this);
@@ -308,7 +336,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 				if(type.equals("zombie")) {
 					Zombie zombie = mZombiePool.obtain(x, y);
 					scene.registerTouchArea(zombie);
-					addObjectToLevel(zombie);
 					return zombie;
 				} else if(type.equals("player")) {
 					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
@@ -438,9 +465,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	}
 
 	private String generateLevelXML() {
-		setLevelEditMode(!mLevelEditModeEnabled); // just here for testing
-		
-		Log.d("generateLevelXML", "---- Start ----");
+		Log.d("generateLevelXML", "--- Start ----");
 		for (ILevelObject obj : mLevelObjectList) {
 			Log.d("generateLevelXML", obj.getLevelXML());
 		}
@@ -461,21 +486,26 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	}
 	
 	private void enableLevelEditMode() {
-		mLevelEditModeEnabled = true;
+		mLevelEditMode = true;
 		for (ILevelObject obj : mLevelObjectList) {
 			obj.onEnableLevelEditMode();
 		}
 		// remove onscreen controls
 		mGameScene.clearChildScene();
+		mZoomCamera.setChaseEntity(null); // camera should not follow player
+		mZoomCamera.setBoundsEnabled(false);
 	}
 	
 	private void disableLevelEditMode() {
-		mLevelEditModeEnabled = false;
+		mLevelEditMode = false;
 		for (ILevelObject obj : mLevelObjectList) {
 			obj.onDisableLevelEditMode();
 		}
 		// add back onscreen controls
 		mGameScene.setChildScene(mOnScreenControlHUD);
+		mZoomCamera.setChaseEntity(mPlayer);
+		mZoomCamera.setZoomFactor(mDefaultZoomFactor);
+		mZoomCamera.setBoundsEnabled(true);
 	}
 	
 	public void addObjectToLevel(ILevelObject obj) {
@@ -485,4 +515,38 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	public void removedObjectFromLevel(ILevelObject obj) {
 		mLevelObjectList.remove(obj);
 	}
+
+	@Override
+	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+		final float zoomFactor = this.mZoomCamera.getZoomFactor();
+		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+	}
+
+	@Override
+	public void onScroll(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+		final float zoomFactor = this.mZoomCamera.getZoomFactor();
+		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+	}
+	
+	@Override
+	public void onScrollFinished(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
+		final float zoomFactor = this.mZoomCamera.getZoomFactor();
+		this.mZoomCamera.offsetCenter(-pDistanceX / zoomFactor, -pDistanceY / zoomFactor);
+	}
+
+	@Override
+	public void onPinchZoomStarted(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent) {
+		this.mPinchZoomStartedCameraZoomFactor = this.mZoomCamera.getZoomFactor();
+	}
+
+	@Override
+	public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+	}
+
+	@Override
+	public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
+		this.mZoomCamera.setZoomFactor(this.mPinchZoomStartedCameraZoomFactor * pZoomFactor);
+	}
+	
 }
