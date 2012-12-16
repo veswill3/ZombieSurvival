@@ -5,14 +5,13 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.ui.activity.BaseGameActivity;
 import android.util.Log;
 
 public class ZombiePool extends EntityPool<Zombie> {
 	
 	private Player mPlayer;
 
-	public ZombiePool(BaseGameActivity activity, PhysicsWorld physicsWorld)
+	public ZombiePool(MainActivity activity, PhysicsWorld physicsWorld)
 			throws IllegalArgumentException {
 		super(activity, physicsWorld);
 	}
@@ -34,11 +33,13 @@ public class ZombiePool extends EntityPool<Zombie> {
 	protected void onAddToWorld(Zombie pItem) {
 		Log.d("ZombiePool", "Adding Zombie to world");
 		pItem.setActive(true);
+		mActivity.addObjectToLevel(pItem);
 	}
 
 	@Override
 	protected void onRecycle(Zombie pItem) {
         pItem.setActive(false);
+        mActivity.removedObjectFromLevel(pItem);
 	}
 
 	@Override

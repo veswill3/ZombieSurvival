@@ -7,7 +7,7 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public class Player extends Character<Player> {
+public class Player extends Character {
 	
 	Weapon mWeapon;
 
@@ -27,19 +27,13 @@ public class Player extends Character<Player> {
 	}
 
 	@Override
-	public Player loadFromXML(String xml) {
-		// TODO Auto-generated method stub
-		return this;
-	}
-
-	@Override
-	protected void onEnableLevelEditMode() {
+	public void onEnableLevelEditMode() {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	protected void onDisableLevelEditMode() {
+	public void onDisableLevelEditMode() {
 		// TODO Auto-generated method stub
 		
 	}

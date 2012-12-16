@@ -5,7 +5,6 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.ui.activity.BaseGameActivity;
 
 import android.util.Log;
 
@@ -13,7 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class BulletPool extends EntityPool<Bullet> {
 
-	public BulletPool(BaseGameActivity activity, PhysicsWorld physicsWorld)
+	public BulletPool(MainActivity activity, PhysicsWorld physicsWorld)
 			throws IllegalArgumentException {
 		super(activity, physicsWorld);
 	}

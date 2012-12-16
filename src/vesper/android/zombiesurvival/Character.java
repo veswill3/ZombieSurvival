@@ -6,7 +6,7 @@ import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
-public abstract class Character<T> extends PhysicalGameObject implements ILevelObject<T> {
+public abstract class Character extends PhysicalGameObject implements ILevelObject {
 
 	int mMaxSpeed;
 	int mHealth;
@@ -20,13 +20,13 @@ public abstract class Character<T> extends PhysicalGameObject implements ILevelO
 	}
 
 	@Override
-	public String getXMLType() {
+	public String getLevelType() {
 		return this.getClass().getSimpleName();
 	}
 
 	@Override
-	public String saveToXML() {
-		return "<entity x=\"" + getX() + "\" y=\"" + getY() + "\" type=\"" + getXMLType() + "\"/>";
+	public String getLevelXML() {
+		return "<entity x=\"" + getX() + "\" y=\"" + getY() + "\" type=\"" + getLevelType() + "\"/>";
 	}
 	
 	@Override
@@ -38,7 +38,4 @@ public abstract class Character<T> extends PhysicalGameObject implements ILevelO
 		}
 	}
 	
-	protected abstract void onEnableLevelEditMode();
-	
-	protected abstract void onDisableLevelEditMode();
 }

@@ -8,13 +8,12 @@ import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
-import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.adt.pool.GenericPool;
 
 import android.util.Log;
 
 public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHandler {
-    protected final BaseGameActivity mActivity;
+    protected final MainActivity mActivity;
     protected final PhysicsWorld mPhysicsWorld;
     protected final VertexBufferObjectManager mVertexBufferObjectManager;
     protected BitmapTextureAtlas mTextureAtlas;
@@ -24,7 +23,7 @@ public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHan
     private Set<T> mEntitiesToRemoveFromWorld = Collections .synchronizedSet(new HashSet<T>());
     
     
-    public EntityPool(BaseGameActivity activity, PhysicsWorld physicsWorld) throws IllegalArgumentException  {
+    public EntityPool(MainActivity activity, PhysicsWorld physicsWorld) throws IllegalArgumentException  {
         if (activity == null) throw new IllegalArgumentException ("BaseGameActivity is null");
         this.mActivity = activity;
         if (physicsWorld == null) throw new IllegalArgumentException ("PhysicsWorld is null");

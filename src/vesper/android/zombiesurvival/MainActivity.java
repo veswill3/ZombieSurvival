@@ -1,6 +1,8 @@
 package vesper.android.zombiesurvival;
 
 import java.io.IOException;
+import java.util.ArrayList;
+
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
@@ -81,17 +83,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			0, 0.5f, 0.5f, false, CATEGORYBIT_WALL, MASKBITS_WALL, (short)0);
 	
 	// level loading related
-	private static final String TAG_ENTITY = "entity";
-	private static final String TAG_WALL = "wall";
-	private static final String TAG_ATTRIBUTE_X = "x";
-	private static final String TAG_ATTRIBUTE_Y = "y";
-	private static final String TAG_ATTRIBUTE_WIDTH = "width";
-	private static final String TAG_ATTRIBUTE_HEIGHT = "height";
-	private static final String TAG_ATTRIBUTE_TYPE = "type";
-	private static final String TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE = "zombie";
-	private static final String TAG_ATTRIBUTE_TYPE_VALUE_PLAYER = "player";
-	
 	private Boolean mLevelEditModeEnabled = false;
+	private ArrayList<ILevelObject> mLevelObjectList = new ArrayList<ILevelObject>();
 	
 	// texture related
 	private BitmapTextureAtlas mBitmapTextureAtlas;
@@ -204,7 +197,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 				break;
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_MENU) {
-			generateLevelXML(mGameScene);
+			generateLevelXML();
 		}
 		return super.onKeyDown(keyCode, event);
 	}
@@ -289,36 +282,38 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			}
 		});
 		
-		levelLoader.registerEntityLoader(TAG_WALL, new IEntityLoader() {
+		levelLoader.registerEntityLoader("wall", new IEntityLoader() {
 			@Override
 			public IEntity onLoadEntity(final String pEntityName, final Attributes pAttributes) {
-				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_X);
-				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
-				final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_WIDTH);
-				final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_HEIGHT);
+				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, "x");
+				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, "y");
+				final int width = SAXUtils.getIntAttributeOrThrow(pAttributes, "width");
+				final int height = SAXUtils.getIntAttributeOrThrow(pAttributes, "height");
 	
 				return createWall(x, y, width, height);
 			}
 		});
 		
-		levelLoader.registerEntityLoader(TAG_ENTITY, new IEntityLoader() {
+		levelLoader.registerEntityLoader("entity", new IEntityLoader() {
 			@Override
 			public IEntity onLoadEntity(final String pEntityName, final Attributes pAttributes) {
-				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_X);
-				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_Y);
-				final String type = SAXUtils.getAttributeOrThrow(pAttributes, TAG_ATTRIBUTE_TYPE);
+				final int x = SAXUtils.getIntAttributeOrThrow(pAttributes, "x");
+				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, "y");
+				final String type = SAXUtils.getAttributeOrThrow(pAttributes, "type");
 	
 				final VertexBufferObjectManager vertexBufferObjectManager = MainActivity.this.getVertexBufferObjectManager();
 	
-				if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_ZOMBIE)) {
+				if(type.equals("zombie")) {
 					Zombie zombie = mZombiePool.obtain(x, y);
 					scene.registerTouchArea(zombie);
+					addObjectToLevel(zombie);
 					return zombie;
-				} else if(type.equals(TAG_ATTRIBUTE_TYPE_VALUE_PLAYER)) {
+				} else if(type.equals("player")) {
 					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
 					mPlayer = player;
 					mZoomCamera.setChaseEntity(player); // follow player
 					mZombiePool.setPlayer(player);
+					addObjectToLevel(player);
 					return player;
 				} else {
 					throw new IllegalArgumentException();
@@ -438,17 +433,39 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		}
 	}
 
-	private String generateLevelXML(Scene pScene) {
-		mLevelEditModeEnabled = !mLevelEditModeEnabled;
+	private String generateLevelXML() {
+		setLevelEditMode(!mLevelEditModeEnabled); // just here for testing
+		
 		Log.d("temp load", "----");
-		IEntity entity;
-		for (int i = 0; i < pScene.getChildCount(); i++) {
-			entity = pScene.getChildByIndex(i);
-			if (entity instanceof ILevelObject<?>) {
-				Log.d("temp load", ((ILevelObject<?>) entity).saveToXML());
-				((ILevelObject<?>) entity).setLevelEditMode(mLevelEditModeEnabled);
+		for (ILevelObject obj : mLevelObjectList) {
+			Log.d("temp load", obj.getLevelXML());
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Enable or disable level edit mode
+	 * @param enable - true to enable level edit mode
+	 */
+	public void setLevelEditMode(boolean enable) {
+		mLevelEditModeEnabled = enable;
+		if (enable) {
+			for (ILevelObject obj : mLevelObjectList) {
+				obj.onEnableLevelEditMode();
+			}
+		} else {
+			for (ILevelObject obj : mLevelObjectList) {
+				obj.onDisableLevelEditMode();
 			}
 		}
-		return null;
+	}
+	
+	public void addObjectToLevel(ILevelObject obj) {
+		mLevelObjectList.add(obj);
+	}
+	
+	public void removedObjectFromLevel(ILevelObject obj) {
+		mLevelObjectList.remove(obj);
 	}
 }

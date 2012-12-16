@@ -26,8 +26,6 @@ public class PhysicalGameObject extends Sprite {
 		
 		setCullingEnabled(true); // no need to continue to draw when not onscreen
 
-		this.setVisible(false); // initially start invisible until added to world
-		
 		// setup the physics
 		Body body = PhysicsFactory.createCircleBody(pPhysicsWorld, this, BodyType.DynamicBody, pFixtureDef);
 		body.setActive(false); // initially start inactive until we add it to the world
