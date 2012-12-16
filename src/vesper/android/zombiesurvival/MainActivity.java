@@ -212,9 +212,9 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		this.mHealthTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mHealthTextureAtlas, this, "health.png", 0, 0);
 		this.mHealthTextureAtlas.load();
 		
-		this.mAmmoTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 16, 720, TextureOptions.BILINEAR);
-		this.mAmmoTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mAmmoTextureAtlas, this, "ammo.png", 0, 0);
-		this.mAmmoTextureAtlas.load();
+		//this.mAmmoTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 16, 720, TextureOptions.BILINEAR);
+		//this.mAmmoTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mAmmoTextureAtlas, this, "ammo.png", 0, 0);
+		//this.mAmmoTextureAtlas.load();
 	}
 	
 	@Override
@@ -534,9 +534,13 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	}
 	
 	private void initOnScreenHUD(HUD hud, final VertexBufferObjectManager vertexBufferObjectManager){
-		final GameHUD gameHUD = new GameHUD(0, 0, mZoomCamera, mHealthTextureRegion, vertexBufferObjectManager);
+		final GameHUD gameHUD = new GameHUD(CAMERA_WIDTH - mHealthTextureRegion.getWidth(), CAMERA_HEIGHT - mHealthTextureRegion.getHeight(),
+				mZoomCamera, mHealthTextureRegion, vertexBufferObjectManager){
+			//mZoomCamera.setHUD(gameHUD);
+		};
 		
 		hud.attachChild(gameHUD);
+		mZoomCamera.setHUD(gameHUD);
 	}
 	
 
