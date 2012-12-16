@@ -6,7 +6,6 @@ import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
-import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import com.badlogic.gdx.math.Vector2;
@@ -20,7 +19,6 @@ public class Zombie extends Enemy {
 	
 	private static final int SMELL_RADIUS = 100;
 	private IUpdateHandler followPlayer;
-	private boolean mLevelEditFlag;
 	
 	public Zombie(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,
@@ -63,29 +61,16 @@ public class Zombie extends Enemy {
 	}
 
 	@Override
-	public void onEnableLevelEditMode() {
+	public void doOnEnableLevelEditMode() {
 		unregisterUpdateHandler(followPlayer);
 		// make click and drag-able
-		mLevelEditFlag = true;
 	}
 
 	@Override
-	public void onDisableLevelEditMode() {
+	public void doOnDisableLevelEditMode() {
 		registerUpdateHandler(followPlayer);
-		mLevelEditFlag = false;
 	}
 
-	@Override
-	public boolean onAreaTouched(TouchEvent pSceneTouchEvent,
-			float pTouchAreaLocalX, float pTouchAreaLocalY) {
-		if (mLevelEditFlag) {
-			float x = pSceneTouchEvent.getX() / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT;
-			float y = pSceneTouchEvent.getY() / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT;
-			getBody().setTransform(x, y, 0);
-			getBody().setLinearVelocity(0f, 0f);
-			return true;
-		}
-		return super.onAreaTouched(pSceneTouchEvent, pTouchAreaLocalX, pTouchAreaLocalY);
-	}
+
 
 }

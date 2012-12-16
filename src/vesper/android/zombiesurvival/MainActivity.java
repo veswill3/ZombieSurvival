@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.andengine.engine.camera.ZoomCamera;
+import org.andengine.engine.camera.hud.HUD;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl.IAnalogOnScreenControlListener;
@@ -99,6 +100,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private Player mPlayer;
 
 	private PhysicsWorld mPhysicsWorld;
+	private HUD mOnScreenControlHUD;
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -313,6 +315,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 					mPlayer = player;
 					mZoomCamera.setChaseEntity(player); // follow player
 					mZombiePool.setPlayer(player);
+					scene.registerTouchArea(player);
 					addObjectToLevel(player);
 					return player;
 				} else {
@@ -336,9 +339,10 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		/* Velocity control (left). */
 		final float x1 = (float) (.5 * this.mOnScreenControlBaseTextureRegion.getWidth());
 		final float y1 = (float) (CAMERA_HEIGHT - (this.mOnScreenControlBaseTextureRegion.getHeight() * 1.5));
-		final AnalogOnScreenControl 
-		velocityOnScreenControl = new AnalogOnScreenControl(x1, y1, this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, 
-				this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
+		final AnalogOnScreenControl velocityOnScreenControl = new AnalogOnScreenControl(x1, y1,
+				this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, 
+				this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(),
+				new IAnalogOnScreenControlListener() {
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
 				final Body body = mPlayer.getBody();
@@ -356,7 +360,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		velocityOnScreenControl.getControlBase().setAlpha(0.5f);
 	
 		scene.setChildScene(velocityOnScreenControl);
-	
+		mOnScreenControlHUD = velocityOnScreenControl;
 	
 		/* Weapon control (right). */
 		final float y2 = y1;
@@ -436,11 +440,11 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private String generateLevelXML() {
 		setLevelEditMode(!mLevelEditModeEnabled); // just here for testing
 		
-		Log.d("temp load", "----");
+		Log.d("generateLevelXML", "---- Start ----");
 		for (ILevelObject obj : mLevelObjectList) {
-			Log.d("temp load", obj.getLevelXML());
+			Log.d("generateLevelXML", obj.getLevelXML());
 		}
-		
+		Log.d("generateLevelXML", "--- finish ---");
 		return null;
 	}
 	
@@ -449,16 +453,29 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	 * @param enable - true to enable level edit mode
 	 */
 	public void setLevelEditMode(boolean enable) {
-		mLevelEditModeEnabled = enable;
 		if (enable) {
-			for (ILevelObject obj : mLevelObjectList) {
-				obj.onEnableLevelEditMode();
-			}
+			enableLevelEditMode();
 		} else {
-			for (ILevelObject obj : mLevelObjectList) {
-				obj.onDisableLevelEditMode();
-			}
+			disableLevelEditMode();
 		}
+	}
+	
+	private void enableLevelEditMode() {
+		mLevelEditModeEnabled = true;
+		for (ILevelObject obj : mLevelObjectList) {
+			obj.onEnableLevelEditMode();
+		}
+		// remove onscreen controls
+		mGameScene.clearChildScene();
+	}
+	
+	private void disableLevelEditMode() {
+		mLevelEditModeEnabled = false;
+		for (ILevelObject obj : mLevelObjectList) {
+			obj.onDisableLevelEditMode();
+		}
+		// add back onscreen controls
+		mGameScene.setChildScene(mOnScreenControlHUD);
 	}
 	
 	public void addObjectToLevel(ILevelObject obj) {

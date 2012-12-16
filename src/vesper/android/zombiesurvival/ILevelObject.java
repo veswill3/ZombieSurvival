@@ -14,12 +14,6 @@ public interface ILevelObject {
 	public String getLevelXML();
 	
 	/**
-	 * Set the objects behavior for level edit mode
-	 * @param editMode true for level edit mode, false for game mode
-	 */
-	public void setLevelEditMode(boolean editMode);
-	
-	/**
 	 * Called when Level Edit mode is enabled
 	 * Implementor should ensure objects behavior changes appropriately
 	 */

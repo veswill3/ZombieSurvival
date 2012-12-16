@@ -4,7 +4,6 @@ import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
-
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public class Player extends Character {
@@ -27,15 +26,13 @@ public class Player extends Character {
 	}
 
 	@Override
-	public void onEnableLevelEditMode() {
-		// TODO Auto-generated method stub
-		
+	public void doOnEnableLevelEditMode() {
+		// nothing
 	}
 
 	@Override
-	public void onDisableLevelEditMode() {
-		// TODO Auto-generated method stub
-		
+	public void doOnDisableLevelEditMode() {
+		// nothing
 	}
 
 
