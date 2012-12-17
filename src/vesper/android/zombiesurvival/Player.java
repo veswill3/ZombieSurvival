@@ -1,5 +1,6 @@
 package vesper.android.zombiesurvival;
 
+import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.opengl.texture.region.ITextureRegion;
@@ -26,14 +27,8 @@ public class Player extends Character {
 	}
 
 	@Override
-	public void doOnEnableLevelEditMode() {
-		// nothing
+	protected IUpdateHandler onCreateGameModeUpdateHanderl() {
+		return null;
 	}
-
-	@Override
-	public void doOnDisableLevelEditMode() {
-		// nothing
-	}
-
 
 }

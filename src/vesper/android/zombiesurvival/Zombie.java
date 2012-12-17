@@ -18,7 +18,6 @@ public class Zombie extends Enemy {
 			CATEGORYBIT_ENEMY, MASKBITS_ZOMBIE, (short)0);
 	
 	private static final int SMELL_RADIUS = 100;
-	private IUpdateHandler followPlayer;
 	
 	public Zombie(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,
@@ -26,7 +25,18 @@ public class Zombie extends Enemy {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager,
 				pPhysicsWorld, mFixtureDef, player);
 		
-		followPlayer = new IUpdateHandler() {
+		onDisableLevelEditMode();
+	}
+	
+	public Zombie set(float x, float y) {
+		getBody().setTransform(x / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT,
+				y / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT, 0);
+		return this;
+	}
+
+	@Override
+	protected IUpdateHandler onCreateGameModeUpdateHanderl() {
+		return new IUpdateHandler() {
 			
 			@Override
 			public void reset() {}
@@ -36,10 +46,8 @@ public class Zombie extends Enemy {
 				followPlayer(mPlayer);
 			}
 		};
-		
-		onDisableLevelEditMode();
 	}
-	
+
 	/**
 	 * If within smelling distance, follow the player
 	 * @param player object to follow
@@ -53,24 +61,4 @@ public class Zombie extends Enemy {
 		}
 		Vector2Pool.recycle(toTarget);
 	}
-
-	public Zombie set(float x, float y) {
-		getBody().setTransform(x / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT,
-				y / PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT, 0);
-		return this;
-	}
-
-	@Override
-	public void doOnEnableLevelEditMode() {
-		unregisterUpdateHandler(followPlayer);
-		// make click and drag-able
-	}
-
-	@Override
-	public void doOnDisableLevelEditMode() {
-		registerUpdateHandler(followPlayer);
-	}
-
-
-
 }
