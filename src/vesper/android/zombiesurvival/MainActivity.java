@@ -2,7 +2,6 @@ package vesper.android.zombiesurvival;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.HUD;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
@@ -61,8 +60,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 															  IScrollDetectorListener,
 															  IPinchZoomDetectorListener {
 
-	private static final int CAMERA_WIDTH = 800;
-	private static final int CAMERA_HEIGHT = 480;
+	public static final int CAMERA_WIDTH = 800;
+	public static final int CAMERA_HEIGHT = 480;
 	private ZoomCamera mZoomCamera;
 	private PinchZoomDetector mPinchZoomDetector;
 	private SurfaceScrollDetector mScrollDetector;
@@ -102,19 +101,9 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	private ITextureRegion mAndroidTextureRegion;
 	
-	private BitmapTextureAtlas mHealthTextureAtlas;
-	private ITextureRegion mHealthTextureRegion;
-	
-	private BitmapTextureAtlas mAmmoTextureAtlas;
-	private ITextureRegion mAmmoTextureRegion;
-	
-	
 	private BitmapTextureAtlas mOnScreenControlTexture;
 	private ITextureRegion mOnScreenControlBaseTextureRegion;
 	private ITextureRegion mOnScreenControlKnobTextureRegion;
-	
-	private BitmapTextureAtlas mBackgroundTexture;
-	private ITextureRegion mBackgroundTextureRegion;
 	
 	private ZombiePool mZombiePool;
 	private BulletPool mBulletPool;
@@ -123,6 +112,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 
 	private PhysicsWorld mPhysicsWorld;
 	private HUD mOnScreenControlHUD;
+	private HUD mGameHUD;
+	private HUD mLevelEditHUD;
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -208,13 +199,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 				this.mOnScreenControlTexture, this, "onscreen_control_knob.png", 128, 0);
 		this.mOnScreenControlTexture.load();
 		
-		this.mHealthTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 16, 16, TextureOptions.BILINEAR);
-		this.mHealthTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mHealthTextureAtlas, this, "health.png", 0, 0);
-		this.mHealthTextureAtlas.load();
-		
-		//this.mAmmoTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 16, 720, TextureOptions.BILINEAR);
-		//this.mAmmoTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mAmmoTextureAtlas, this, "ammo.png", 0, 0);
-		//this.mAmmoTextureAtlas.load();
 	}
 	
 	@Override
@@ -261,8 +245,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		scene.setTouchAreaBindingOnActionDownEnabled(true);
 		scene.registerUpdateHandler(this.mPhysicsWorld);
 		scene.setOnAreaTouchListener(this);
-		
-		final HUD hud = new HUD();
 		
 		mPhysicsWorld.setContactListener(new ContactListener() {
 			
@@ -376,7 +358,9 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		}
 		
 		initOnScreenControlsTest(scene, vertexBufferObjectManager);
-		initOnScreenHUD(hud, vertexBufferObjectManager);
+		mGameHUD = new GameHUD(mZoomCamera, this, vertexBufferObjectManager, mPlayer);
+//		mLevelEditHUD = new LevelEditHUD(...) TODO uncomment when created class
+		setLevelEditMode(false); // start in game mode
 	}
 
 	private void initOnScreenControlsTest(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager ){
@@ -507,10 +491,10 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		for (ILevelObject obj : mLevelObjectList) {
 			obj.onEnableLevelEditMode();
 		}
-		// remove onscreen controls
-		mGameScene.clearChildScene();
+		mGameScene.clearChildScene(); // remove onscreen controls
 		mZoomCamera.setChaseEntity(null); // camera should not follow player
 		mZoomCamera.setBoundsEnabled(false);
+		mZoomCamera.setHUD(mLevelEditHUD);
 	}
 	
 	private void disableLevelEditMode() {
@@ -518,11 +502,11 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		for (ILevelObject obj : mLevelObjectList) {
 			obj.onDisableLevelEditMode();
 		}
-		// add back onscreen controls
-		mGameScene.setChildScene(mOnScreenControlHUD);
+		mGameScene.setChildScene(mOnScreenControlHUD); // add back onscreen controls
 		mZoomCamera.setChaseEntity(mPlayer);
 		mZoomCamera.setZoomFactor(mDefaultZoomFactor);
 		mZoomCamera.setBoundsEnabled(true);
+		mZoomCamera.setHUD(mGameHUD);
 	}
 	
 	public void addObjectToLevel(ILevelObject obj) {
@@ -532,17 +516,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	public void removedObjectFromLevel(ILevelObject obj) {
 		mLevelObjectList.remove(obj);
 	}
-	
-	private void initOnScreenHUD(HUD hud, final VertexBufferObjectManager vertexBufferObjectManager){
-		final GameHUD gameHUD = new GameHUD(CAMERA_WIDTH - mHealthTextureRegion.getWidth(), CAMERA_HEIGHT - mHealthTextureRegion.getHeight(),
-				mZoomCamera, mHealthTextureRegion, vertexBufferObjectManager){
-			//mZoomCamera.setHUD(gameHUD);
-		};
-		
-		hud.attachChild(gameHUD);
-		mZoomCamera.setHUD(gameHUD);
-	}
-	
 
 	@Override
 	public void onScrollStarted(final ScrollDetector pScollDetector, final int pPointerID, final float pDistanceX, final float pDistanceY) {
