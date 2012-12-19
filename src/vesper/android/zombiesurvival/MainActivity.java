@@ -359,7 +359,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		
 		initOnScreenControlsTest(scene, vertexBufferObjectManager);
 		mGameHUD = new GameHUD(mZoomCamera, this, vertexBufferObjectManager, mPlayer);
-//		mLevelEditHUD = new LevelEditHUD(...) TODO uncomment when created class
+		mLevelEditHUD = new LevelEditHUD(mZoomCamera, this, vertexBufferObjectManager);
 		setLevelEditMode(false); // start in game mode
 	}
 
