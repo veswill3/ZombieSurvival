@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.HUD;
-import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
-import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
-import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl.IAnalogOnScreenControlListener;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.engine.options.EngineOptions;
@@ -23,13 +20,13 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
-import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.input.touch.detector.PinchZoomDetector;
 import org.andengine.input.touch.detector.PinchZoomDetector.IPinchZoomDetectorListener;
 import org.andengine.input.touch.detector.ScrollDetector;
 import org.andengine.input.touch.detector.ScrollDetector.IScrollDetectorListener;
 import org.andengine.input.touch.detector.SurfaceScrollDetector;
+import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -43,11 +40,9 @@ import org.andengine.util.level.IEntityLoader;
 import org.andengine.util.level.LevelLoader;
 import org.andengine.util.level.constants.LevelConstants;
 import org.xml.sax.Attributes;
-import android.opengl.GLES20;
 import android.util.Log;
 import android.view.KeyEvent;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
@@ -101,9 +96,12 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	private ITextureRegion mAndroidTextureRegion;
 	
-	private BitmapTextureAtlas mOnScreenControlTexture;
-	private ITextureRegion mOnScreenControlBaseTextureRegion;
-	private ITextureRegion mOnScreenControlKnobTextureRegion;
+	public static BitmapTextureAtlas _OnScreenControlTextureAtlas;
+	public static ITextureRegion _OnScreenControlBaseTextureRegion;
+	public static ITextureRegion _OnScreenControlKnobTextureRegion;
+	
+	public static BitmapTextureAtlas _HealthTextureAtlas;
+	public static ITextureRegion _HealthTextureRegion;
 	
 	private ZombiePool mZombiePool;
 	private BulletPool mBulletPool;
@@ -111,7 +109,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private Player mPlayer;
 
 	private PhysicsWorld mPhysicsWorld;
-	private HUD mOnScreenControlHUD;
 	private HUD mGameHUD;
 	private HUD mLevelEditHUD;
 
@@ -183,22 +180,24 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		// Load your game resources here!
 		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
 		
-		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-
 		mZombiePool = new ZombiePool(this, mPhysicsWorld);
 		mBulletPool = new BulletPool(this, mPhysicsWorld);
 		
-		this.mBitmapTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 32, 32, TextureOptions.BILINEAR);
+		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		final TextureManager textureMgr = this.getTextureManager();
+		// player texture
+		this.mBitmapTextureAtlas = new BitmapTextureAtlas(textureMgr, 32, 32, TextureOptions.BILINEAR);
 		this.mAndroidTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, "Android.png", 0, 0);
 		this.mBitmapTextureAtlas.load();
-
-		this.mOnScreenControlTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 128, TextureOptions.BILINEAR);
-		this.mOnScreenControlBaseTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-				this.mOnScreenControlTexture, this, "onscreen_control_base.png", 0, 0);
-		this.mOnScreenControlKnobTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-				this.mOnScreenControlTexture, this, "onscreen_control_knob.png", 128, 0);
-		this.mOnScreenControlTexture.load();
-		
+		// onscreen control textures
+		_OnScreenControlTextureAtlas = new BitmapTextureAtlas(textureMgr, 256, 128, TextureOptions.BILINEAR);
+		_OnScreenControlBaseTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(_OnScreenControlTextureAtlas, this, "onscreen_control_base.png", 0, 0);
+		_OnScreenControlKnobTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(_OnScreenControlTextureAtlas, this, "onscreen_control_knob.png", 128, 0);
+		_OnScreenControlTextureAtlas.load();
+		// health meter texture
+		_HealthTextureAtlas = new BitmapTextureAtlas(textureMgr, 16, 16, TextureOptions.BILINEAR);
+		_HealthTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(_HealthTextureAtlas, this, "health.png", 0, 0);
+		_HealthTextureAtlas.load();
 	}
 	
 	@Override
@@ -338,7 +337,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 					scene.registerTouchArea(zombie);
 					return zombie;
 				} else if(type.equals("player")) {
-					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld);
+					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld, mBulletPool);
 					mPlayer = player;
 					mZoomCamera.setChaseEntity(player); // follow player
 					mZombiePool.setPlayer(player);
@@ -357,64 +356,9 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			Debug.e(e);
 		}
 		
-		initOnScreenControlsTest(scene, vertexBufferObjectManager);
-		mGameHUD = new GameHUD(mZoomCamera, this, vertexBufferObjectManager, mPlayer);
+		mGameHUD = new GameHUD(mZoomCamera, vertexBufferObjectManager, mPlayer);
 		mLevelEditHUD = new LevelEditHUD(mZoomCamera, this, vertexBufferObjectManager);
 		setLevelEditMode(false); // start in game mode
-	}
-
-	private void initOnScreenControlsTest(Scene scene, final VertexBufferObjectManager vertexBufferObjectManager ){
-		/* Velocity control (left). */
-		final float x1 = (float) (.5 * this.mOnScreenControlBaseTextureRegion.getWidth());
-		final float y1 = (float) (CAMERA_HEIGHT - (this.mOnScreenControlBaseTextureRegion.getHeight() * 1.5));
-		final AnalogOnScreenControl velocityOnScreenControl = new AnalogOnScreenControl(x1, y1,
-				this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, 
-				this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(),
-				new IAnalogOnScreenControlListener() {
-			@Override
-			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
-				final Body body = mPlayer.getBody();
-				final Vector2 velocity = Vector2Pool.obtain(pValueX * 10, pValueY * 10);
-				body.setLinearVelocity(velocity);
-				Vector2Pool.recycle(velocity);
-			}
-	
-			@Override
-			public void onControlClick(final AnalogOnScreenControl pAnalogOnScreenControl) {
-				/* Nothing. */
-			}
-		});
-		velocityOnScreenControl.getControlBase().setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-		velocityOnScreenControl.getControlBase().setAlpha(0.5f);
-	
-		scene.setChildScene(velocityOnScreenControl);
-		mOnScreenControlHUD = velocityOnScreenControl;
-	
-		/* Weapon control (right). */
-		final float y2 = y1;
-		final float x2 = (float) (CAMERA_WIDTH - (this.mOnScreenControlBaseTextureRegion.getWidth() * 1.5));
-		final AnalogOnScreenControl rotationOnScreenControl = new AnalogOnScreenControl(x2, y2, this.mZoomCamera, this.mOnScreenControlBaseTextureRegion, this.mOnScreenControlKnobTextureRegion, 0.1f, this.getVertexBufferObjectManager(), new IAnalogOnScreenControlListener() {
-			@Override
-			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
-				if(pValueX == 0 && pValueY == 0) {
-					// do nothing
-				} else {
-					float x = mPlayer.getX() + 16; // adjusting to center of sprite
-					float y = mPlayer.getY() + 16; // TODO - fix this
-					Bullet b = mBulletPool.obtain(x, y, new Vector2(pValueX, pValueY));
-					mGameScene.attachChild(b);
-				}
-			}
-	
-			@Override
-			public void onControlClick(final AnalogOnScreenControl pAnalogOnScreenControl) {
-				/* Nothing. */
-			}
-		});
-		rotationOnScreenControl.getControlBase().setBlendFunction(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-		rotationOnScreenControl.getControlBase().setAlpha(0.5f);
-	
-		velocityOnScreenControl.setChildScene(rotationOnScreenControl);
 	}
 
 	private void initSplashScene()
@@ -491,7 +435,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		for (ILevelObject obj : mLevelObjectList) {
 			obj.onEnableLevelEditMode();
 		}
-		mGameScene.clearChildScene(); // remove onscreen controls
 		mZoomCamera.setChaseEntity(null); // camera should not follow player
 		mZoomCamera.setBoundsEnabled(false);
 		mZoomCamera.setHUD(mLevelEditHUD);
@@ -502,7 +445,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		for (ILevelObject obj : mLevelObjectList) {
 			obj.onDisableLevelEditMode();
 		}
-		mGameScene.setChildScene(mOnScreenControlHUD); // add back onscreen controls
 		mZoomCamera.setChaseEntity(mPlayer);
 		mZoomCamera.setZoomFactor(mDefaultZoomFactor);
 		mZoomCamera.setBoundsEnabled(true);
