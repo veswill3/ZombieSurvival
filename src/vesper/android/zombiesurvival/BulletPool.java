@@ -1,20 +1,17 @@
 package vesper.android.zombiesurvival;
 
-import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
-
 import android.util.Log;
-
 import com.badlogic.gdx.math.Vector2;
 
 public class BulletPool extends EntityPool<Bullet> {
 
-	public BulletPool(MainActivity activity, PhysicsWorld physicsWorld)
+	public BulletPool(MainActivity activity)
 			throws IllegalArgumentException {
-		super(activity, physicsWorld);
+		super(activity);
 	}
 	
 	public Bullet obtain(float x, float y, Vector2 direction) {
@@ -48,7 +45,7 @@ public class BulletPool extends EntityPool<Bullet> {
 
 	@Override
 	protected Bullet onAllocatePoolItem() {
-		return new Bullet(0, 0, mTextureRegion, mVertexBufferObjectManager, mPhysicsWorld);
+		return new Bullet(0, 0, mTextureRegion, mVertexBufferObjectManager);
 	}
 
 }

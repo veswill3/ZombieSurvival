@@ -3,7 +3,6 @@ package vesper.android.zombiesurvival;
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.entity.Entity;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
-import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
 import org.andengine.opengl.texture.region.ITextureRegion;
@@ -21,9 +20,9 @@ public class Zombie extends Enemy {
 	
 	public Zombie(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,
-			PhysicsWorld pPhysicsWorld, Entity player) {
+			Entity player) {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager,
-				pPhysicsWorld, mFixtureDef, player);
+				mFixtureDef, player);
 		
 		onDisableLevelEditMode();
 	}

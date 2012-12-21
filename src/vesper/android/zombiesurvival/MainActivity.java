@@ -90,7 +90,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	// level loading related
 	private Boolean mLevelEditMode = false;
-	private ArrayList<ILevelObject> mLevelObjectList = new ArrayList<ILevelObject>();
+	private static ArrayList<ILevelObject> _LevelObjectList = new ArrayList<ILevelObject>();
 	
 	// texture related
 	private BitmapTextureAtlas mBitmapTextureAtlas;
@@ -108,7 +108,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	private Player mPlayer;
 
-	private PhysicsWorld mPhysicsWorld;
+	public static PhysicsWorld _PhysicsWorld;
 	private HUD mGameHUD;
 	private HUD mLevelEditHUD;
 
@@ -178,10 +178,12 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	public void loadResources() 
 	{
 		// Load your game resources here!
-		this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
+		_PhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
 		
-		mZombiePool = new ZombiePool(this, mPhysicsWorld);
-		mBulletPool = new BulletPool(this, mPhysicsWorld);
+		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+
+		mZombiePool = new ZombiePool(this);
+		mBulletPool = new BulletPool(this);
 		
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 		final TextureManager textureMgr = this.getTextureManager();
@@ -242,10 +244,10 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		this.mScrollDetector = new SurfaceScrollDetector(this);
 		this.mPinchZoomDetector = new PinchZoomDetector(this);
 		scene.setTouchAreaBindingOnActionDownEnabled(true);
-		scene.registerUpdateHandler(this.mPhysicsWorld);
+		scene.registerUpdateHandler(_PhysicsWorld);
 		scene.setOnAreaTouchListener(this);
 		
-		mPhysicsWorld.setContactListener(new ContactListener() {
+		_PhysicsWorld.setContactListener(new ContactListener() {
 			
 			@Override
 			public void preSolve(Contact contact, Manifold oldManifold) {
@@ -337,7 +339,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 					scene.registerTouchArea(zombie);
 					return zombie;
 				} else if(type.equals("player")) {
-					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mPhysicsWorld, mBulletPool);
+					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mBulletPool);
 					mPlayer = player;
 					mZoomCamera.setChaseEntity(player); // follow player
 					mZombiePool.setPlayer(player);
@@ -373,7 +375,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private IEntity createWall(int x, int y, int width, int height) {
 		final Rectangle wall = new Rectangle(x, y, width, height, this.getVertexBufferObjectManager());
 		wall.setColor(Color.BLACK);
-		PhysicsFactory.createBoxBody(mPhysicsWorld, wall, BodyType.StaticBody, WALL_FIXTUREDEF).setUserData(wall);
+		PhysicsFactory.createBoxBody(_PhysicsWorld, wall, BodyType.StaticBody, WALL_FIXTUREDEF).setUserData(wall);
 		return wall;
 	}
 
@@ -411,7 +413,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 
 	private String generateLevelXML() {
 		Log.d("generateLevelXML", "--- Start ----");
-		for (ILevelObject obj : mLevelObjectList) {
+		for (ILevelObject obj : _LevelObjectList) {
 			Log.d("generateLevelXML", obj.getLevelXML());
 		}
 		Log.d("generateLevelXML", "--- finish ---");
@@ -432,7 +434,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	private void enableLevelEditMode() {
 		mLevelEditMode = true;
-		for (ILevelObject obj : mLevelObjectList) {
+		for (ILevelObject obj : _LevelObjectList) {
 			obj.onEnableLevelEditMode();
 		}
 		mZoomCamera.setChaseEntity(null); // camera should not follow player
@@ -442,7 +444,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	private void disableLevelEditMode() {
 		mLevelEditMode = false;
-		for (ILevelObject obj : mLevelObjectList) {
+		for (ILevelObject obj : _LevelObjectList) {
 			obj.onDisableLevelEditMode();
 		}
 		mZoomCamera.setChaseEntity(mPlayer);
@@ -451,12 +453,12 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		mZoomCamera.setHUD(mGameHUD);
 	}
 	
-	public void addObjectToLevel(ILevelObject obj) {
-		mLevelObjectList.add(obj);
+	public static void addObjectToLevel(ILevelObject obj) {
+		_LevelObjectList.add(obj);
 	}
 	
-	public void removedObjectFromLevel(ILevelObject obj) {
-		mLevelObjectList.remove(obj);
+	public static void removedObjectFromLevel(ILevelObject obj) {
+		_LevelObjectList.remove(obj);
 	}
 
 	@Override

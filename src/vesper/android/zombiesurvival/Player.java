@@ -8,7 +8,6 @@ import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl.IAnalogOnS
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
-import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
@@ -28,9 +27,8 @@ public class Player extends Character implements IObjectWithHUD {
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
 			CATEGORYBIT_PLAYER, MASKBITS_PLAYER, (short)0);
 	
-	public Player(float pX, float pY, ITextureRegion pTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager,
-			PhysicsWorld pPhysicsWorld, BulletPool pBulletPool) {
-		super(pX, pY, pTextureRegion, pVertexBufferObjectManager, pPhysicsWorld, mFixtureDef);
+	public Player(float pX, float pY, ITextureRegion pTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager, BulletPool pBulletPool) {
+		super(pX, pY, pTextureRegion, pVertexBufferObjectManager, mFixtureDef);
 		
 		// start with a pistol
 		mWeapon = new Pistol(this, pBulletPool);

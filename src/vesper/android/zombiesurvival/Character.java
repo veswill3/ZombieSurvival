@@ -1,7 +1,6 @@
 package vesper.android.zombiesurvival;
 
 import org.andengine.engine.handler.IUpdateHandler;
-import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.ITextureRegion;
@@ -18,9 +17,8 @@ public abstract class Character extends PhysicalGameObject implements ILevelObje
 
 	public Character(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,
-			PhysicsWorld pPhysicsWorld, FixtureDef pFixtureDef) {
-		super(pX, pY, pTextureRegion, pVertexBufferObjectManager, pPhysicsWorld,
-				pFixtureDef);
+			FixtureDef pFixtureDef) {
+		super(pX, pY, pTextureRegion, pVertexBufferObjectManager, pFixtureDef);
 		mGameModeUpdateHandler = onCreateGameModeUpdateHanderl();
 	}
 

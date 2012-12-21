@@ -1,6 +1,5 @@
 package vesper.android.zombiesurvival;
 
-import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -11,9 +10,9 @@ public class ZombiePool extends EntityPool<Zombie> {
 	
 	private Player mPlayer;
 
-	public ZombiePool(MainActivity activity, PhysicsWorld physicsWorld)
+	public ZombiePool(MainActivity activity)
 			throws IllegalArgumentException {
-		super(activity, physicsWorld);
+		super(activity);
 	}
 	
 	public Zombie obtain(float x, float y) {
@@ -33,13 +32,13 @@ public class ZombiePool extends EntityPool<Zombie> {
 	protected void onAddToWorld(Zombie pItem) {
 		Log.d("ZombiePool", "Adding Zombie to world");
 		pItem.setActive(true);
-		mActivity.addObjectToLevel(pItem);
+		MainActivity.addObjectToLevel(pItem);
 	}
 
 	@Override
 	protected void onRecycle(Zombie pItem) {
         pItem.setActive(false);
-        mActivity.removedObjectFromLevel(pItem);
+        MainActivity.removedObjectFromLevel(pItem);
 	}
 
 	@Override
@@ -57,7 +56,7 @@ public class ZombiePool extends EntityPool<Zombie> {
 	@Override
 	protected Zombie onAllocatePoolItem() {
 		Log.d("ZombiePool", "allocating new Zombie");
-		return new Zombie(0, 0, mTextureRegion, mVertexBufferObjectManager, mPhysicsWorld, mPlayer);
+		return new Zombie(0, 0, mTextureRegion, mVertexBufferObjectManager, mPlayer);
 	}
 
 }

@@ -21,16 +21,17 @@ public class PhysicalGameObject extends Sprite {
 
 	public PhysicalGameObject(float pX, float pY, ITextureRegion pTextureRegion,
 			VertexBufferObjectManager pVertexBufferObjectManager,
-			PhysicsWorld pPhysicsWorld, FixtureDef pFixtureDef) {
+			FixtureDef pFixtureDef) {
 		super(pX, pY, pTextureRegion, pVertexBufferObjectManager);
 		
 		setCullingEnabled(true); // no need to continue to draw when not onscreen
 
 		// setup the physics
-		Body body = PhysicsFactory.createCircleBody(pPhysicsWorld, this, BodyType.DynamicBody, pFixtureDef);
+		PhysicsWorld physicsWorld = MainActivity._PhysicsWorld;
+		Body body = PhysicsFactory.createCircleBody(physicsWorld, this, BodyType.DynamicBody, pFixtureDef);
 		body.setActive(false); // initially start inactive until we add it to the world
 		body.setUserData(this);
-		pPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(this, body, true, false));
+		physicsWorld.registerPhysicsConnector(new PhysicsConnector(this, body, true, false));
 		mBody = body;
 	}
 	
