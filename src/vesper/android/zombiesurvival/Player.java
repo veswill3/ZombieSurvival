@@ -27,8 +27,8 @@ public class Player extends Character implements IObjectWithHUD {
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
 			CATEGORYBIT_PLAYER, MASKBITS_PLAYER, (short)0);
 	
-	public Player(float pX, float pY, ITextureRegion pTextureRegion, VertexBufferObjectManager pVertexBufferObjectManager, BulletPool pBulletPool) {
-		super(pX, pY, pTextureRegion, pVertexBufferObjectManager, mFixtureDef);
+	public Player(float pX, float pY, ITextureRegion pTextureRegion, BulletPool pBulletPool) {
+		super(pX, pY, pTextureRegion, mFixtureDef);
 		
 		// start with a pistol
 		mWeapon = new Pistol(this, pBulletPool);

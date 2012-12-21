@@ -4,7 +4,6 @@ import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
@@ -15,10 +14,8 @@ public abstract class Character extends PhysicalGameObject implements ILevelObje
 	int mMaxSpeed;
 	int mHealth;
 
-	public Character(float pX, float pY, ITextureRegion pTextureRegion,
-			VertexBufferObjectManager pVertexBufferObjectManager,
-			FixtureDef pFixtureDef) {
-		super(pX, pY, pTextureRegion, pVertexBufferObjectManager, pFixtureDef);
+	public Character(float pX, float pY, ITextureRegion pTextureRegion, FixtureDef pFixtureDef) {
+		super(pX, pY, pTextureRegion, pFixtureDef);
 		mGameModeUpdateHandler = onCreateGameModeUpdateHanderl();
 	}
 

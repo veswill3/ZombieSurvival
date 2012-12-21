@@ -1,8 +1,6 @@
 package vesper.android.zombiesurvival;
 
-import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import android.util.Log;
 
@@ -10,9 +8,8 @@ public class ZombiePool extends EntityPool<Zombie> {
 	
 	private Player mPlayer;
 
-	public ZombiePool(MainActivity activity)
-			throws IllegalArgumentException {
-		super(activity);
+	public ZombiePool() {
+		super();
 	}
 	
 	public Zombie obtain(float x, float y) {
@@ -44,19 +41,19 @@ public class ZombiePool extends EntityPool<Zombie> {
 	@Override
 	public BitmapTextureAtlas onCreateTextureAtlas() {
 		Log.d("ZombiePool", "onCreateTextureAtlas");
-		return new BitmapTextureAtlas(mActivity.getTextureManager(), 32, 32, TextureOptions.BILINEAR);
+		return MainActivity._ZombieTextureAtlas;
 	}
 
 	@Override
 	public ITextureRegion onCreateTextureRegion() {
 		Log.d("ZombiePool", "oncreateTextureRegion");
-		return BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(getTextureAtlas(), mActivity, "Zombie.png", 0, 0, 1, 1);
+		return MainActivity._ZombieTextureRegion;
 	}
 
 	@Override
 	protected Zombie onAllocatePoolItem() {
 		Log.d("ZombiePool", "allocating new Zombie");
-		return new Zombie(0, 0, mTextureRegion, mVertexBufferObjectManager, mPlayer);
+		return new Zombie(0, 0, mTextureRegion, mPlayer);
 	}
 
 }

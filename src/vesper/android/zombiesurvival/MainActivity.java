@@ -93,6 +93,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private static ArrayList<ILevelObject> _LevelObjectList = new ArrayList<ILevelObject>();
 	
 	// texture related
+	public static VertexBufferObjectManager _VBOM;
 	private BitmapTextureAtlas mBitmapTextureAtlas;
 	private ITextureRegion mAndroidTextureRegion;
 	
@@ -102,6 +103,13 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	public static BitmapTextureAtlas _HealthTextureAtlas;
 	public static ITextureRegion _HealthTextureRegion;
+	
+	public static BitmapTextureAtlas _BulletTextureAtlas;
+	public static ITextureRegion _BulletTextureRegion;
+
+	public static BitmapTextureAtlas _ZombieTextureAtlas;
+	public static ITextureRegion _ZombieTextureRegion;
+	
 	
 	private ZombiePool mZombiePool;
 	private BulletPool mBulletPool;
@@ -125,8 +133,9 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	@Override
 	public void onCreateResources(OnCreateResourcesCallback pOnCreateResourcesCallback) throws Exception {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		_VBOM = mEngine.getVertexBufferObjectManager();
 		splashTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.DEFAULT);
-		splashTextureRegion =BitmapTextureAtlasTextureRegionFactory.createFromAsset(splashTextureAtlas, this,"splash.png", 0, 0);
+		splashTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(splashTextureAtlas, this,"splash.png", 0, 0);
 		splashTextureAtlas.load();
 		pOnCreateResourcesCallback.onCreateResourcesFinished();
 	}
@@ -180,12 +189,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		// Load your game resources here!
 		_PhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
 		
-		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-
-		mZombiePool = new ZombiePool(this);
-		mBulletPool = new BulletPool(this);
-		
-		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 		final TextureManager textureMgr = this.getTextureManager();
 		// player texture
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(textureMgr, 32, 32, TextureOptions.BILINEAR);
@@ -200,6 +203,17 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		_HealthTextureAtlas = new BitmapTextureAtlas(textureMgr, 16, 16, TextureOptions.BILINEAR);
 		_HealthTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(_HealthTextureAtlas, this, "health.png", 0, 0);
 		_HealthTextureAtlas.load();
+		// Bullet texture
+		_BulletTextureAtlas = new BitmapTextureAtlas(textureMgr, 8, 8, TextureOptions.BILINEAR);
+		_BulletTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(_BulletTextureAtlas, this, "bullet.png", 0, 0, 1, 1);
+		_BulletTextureAtlas.load();
+		// Zombie texture
+		_ZombieTextureAtlas = new BitmapTextureAtlas(textureMgr, 32, 32, TextureOptions.BILINEAR);
+		_ZombieTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(_ZombieTextureAtlas, this, "Zombie.png", 0, 0, 1, 1);
+		_ZombieTextureAtlas.load();
+		
+		mZombiePool = new ZombiePool();
+		mBulletPool = new BulletPool();
 	}
 	
 	@Override
@@ -288,8 +302,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		scene.registerUpdateHandler(mZombiePool);
 		scene.registerUpdateHandler(mBulletPool);
 		
-		final VertexBufferObjectManager vertexBufferObjectManager = this.getVertexBufferObjectManager();
-		
 		final LevelLoader levelLoader = new LevelLoader();
 		levelLoader.setAssetBasePath("level/");
 	
@@ -332,14 +344,12 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 				final int y = SAXUtils.getIntAttributeOrThrow(pAttributes, "y");
 				final String type = SAXUtils.getAttributeOrThrow(pAttributes, "type");
 	
-				final VertexBufferObjectManager vertexBufferObjectManager = MainActivity.this.getVertexBufferObjectManager();
-	
 				if(type.equals("zombie")) {
 					Zombie zombie = mZombiePool.obtain(x, y);
 					scene.registerTouchArea(zombie);
 					return zombie;
 				} else if(type.equals("player")) {
-					Player player = new Player(x, y, mAndroidTextureRegion, vertexBufferObjectManager, mBulletPool);
+					Player player = new Player(x, y, mAndroidTextureRegion, mBulletPool);
 					mPlayer = player;
 					mZoomCamera.setChaseEntity(player); // follow player
 					mZombiePool.setPlayer(player);
@@ -358,22 +368,22 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			Debug.e(e);
 		}
 		
-		mGameHUD = new GameHUD(mZoomCamera, vertexBufferObjectManager, mPlayer);
-		mLevelEditHUD = new LevelEditHUD(mZoomCamera, this, vertexBufferObjectManager);
+		mGameHUD = new GameHUD(mZoomCamera, _VBOM, mPlayer);
+		mLevelEditHUD = new LevelEditHUD(mZoomCamera, this, _VBOM);
 		setLevelEditMode(false); // start in game mode
 	}
 
 	private void initSplashScene()
 	{
 		mSplashScene = new Scene();
-	    splash = new Sprite(0, 0, splashTextureRegion, mEngine.getVertexBufferObjectManager());
+	    splash = new Sprite(0, 0, splashTextureRegion, _VBOM);
 	    splash.setScale(1.5f);
 		splash.setPosition((CAMERA_WIDTH - splash.getWidth()) * 0.5f, (CAMERA_HEIGHT-splash.getHeight()) * 0.5f);
 		mSplashScene.attachChild(splash);
 	}
 
 	private IEntity createWall(int x, int y, int width, int height) {
-		final Rectangle wall = new Rectangle(x, y, width, height, this.getVertexBufferObjectManager());
+		final Rectangle wall = new Rectangle(x, y, width, height, _VBOM);
 		wall.setColor(Color.BLACK);
 		PhysicsFactory.createBoxBody(_PhysicsWorld, wall, BodyType.StaticBody, WALL_FIXTUREDEF).setUserData(wall);
 		return wall;

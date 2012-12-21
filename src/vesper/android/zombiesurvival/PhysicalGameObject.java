@@ -5,7 +5,6 @@ import org.andengine.extension.physics.box2d.PhysicsConnector;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
@@ -19,10 +18,8 @@ public class PhysicalGameObject extends Sprite {
 	
 	private final Body mBody;
 
-	public PhysicalGameObject(float pX, float pY, ITextureRegion pTextureRegion,
-			VertexBufferObjectManager pVertexBufferObjectManager,
-			FixtureDef pFixtureDef) {
-		super(pX, pY, pTextureRegion, pVertexBufferObjectManager);
+	public PhysicalGameObject(float pX, float pY, ITextureRegion pTextureRegion, FixtureDef pFixtureDef) {
+		super(pX, pY, pTextureRegion, MainActivity._VBOM);
 		
 		setCullingEnabled(true); // no need to continue to draw when not onscreen
 

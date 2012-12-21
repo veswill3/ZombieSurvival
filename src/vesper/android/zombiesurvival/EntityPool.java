@@ -6,14 +6,11 @@ import java.util.Set;
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.adt.pool.GenericPool;
 
 import android.util.Log;
 
 public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHandler {
-    protected final MainActivity mActivity;
-    protected final VertexBufferObjectManager mVertexBufferObjectManager;
     protected BitmapTextureAtlas mTextureAtlas;
     protected ITextureRegion mTextureRegion;
 
@@ -21,10 +18,7 @@ public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHan
     private Set<T> mEntitiesToRemoveFromWorld = Collections .synchronizedSet(new HashSet<T>());
     
     
-    public EntityPool(MainActivity activity) throws IllegalArgumentException  {
-        if (activity == null) throw new IllegalArgumentException ("BaseGameActivity is null");
-        this.mActivity = activity;
-        mVertexBufferObjectManager = activity.getVertexBufferObjectManager();
+    public EntityPool() {
         this.setTextureAtlas(onCreateTextureAtlas());
         assert getTextureAtlas() instanceof BitmapTextureAtlas;
         

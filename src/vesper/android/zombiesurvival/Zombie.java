@@ -6,7 +6,6 @@ import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.util.Vector2Pool;
 import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
 import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
@@ -18,11 +17,8 @@ public class Zombie extends Enemy {
 	
 	private static final int SMELL_RADIUS = 100;
 	
-	public Zombie(float pX, float pY, ITextureRegion pTextureRegion,
-			VertexBufferObjectManager pVertexBufferObjectManager,
-			Entity player) {
-		super(pX, pY, pTextureRegion, pVertexBufferObjectManager,
-				mFixtureDef, player);
+	public Zombie(float pX, float pY, ITextureRegion pTextureRegion, Entity player) {
+		super(pX, pY, pTextureRegion, mFixtureDef, player);
 		
 		onDisableLevelEditMode();
 	}
