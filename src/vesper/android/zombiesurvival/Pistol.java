@@ -6,11 +6,9 @@ public class Pistol extends Weapon {
 	
 //	private static final int MAX_AMMO = 50;
 //	private int mAmmo;
-	final BulletPool mBulletPool;
 	
-	public Pistol(final Character pParent, final BulletPool pBulletPool) {
+	public Pistol(final Character pParent) {
 		super(pParent);
-		mBulletPool = pBulletPool;
 //		this.mAmmo = MAX_AMMO;
 	}
 
@@ -19,7 +17,7 @@ public class Pistol extends Weapon {
 		Character parent = mParent;
 		float x = parent.getX() + parent.getWidth() / 2; // adjusting to center of sprite
 		float y = parent.getY() + parent.getHeight() / 2;
-		Bullet b = mBulletPool.obtain(x, y, new Vector2(pX, pY));
+		Bullet b = MainActivity._BulletPool.obtain(x, y, new Vector2(pX, pY));
 		mParent.getParent().attachChild(b);
 	}
 	

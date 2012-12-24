@@ -111,8 +111,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	public static ITextureRegion _ZombieTextureRegion;
 	
 	
-	private ZombiePool mZombiePool;
-	private BulletPool mBulletPool;
+	public static ZombiePool _ZombiePool;
+	public static BulletPool _BulletPool;
 	
 	private Player mPlayer;
 
@@ -186,9 +186,10 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 
 	public void loadResources() 
 	{
-		// Load your game resources here!
 		_PhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
 		
+		// TODO - use the same texture atlas for all textures to reduce memory footprint
+		//		  also, confirm that this is how you are supposed to do it
 		final TextureManager textureMgr = this.getTextureManager();
 		// player texture
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(textureMgr, 32, 32, TextureOptions.BILINEAR);
@@ -212,8 +213,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		_ZombieTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(_ZombieTextureAtlas, this, "Zombie.png", 0, 0, 1, 1);
 		_ZombieTextureAtlas.load();
 		
-		mZombiePool = new ZombiePool();
-		mBulletPool = new BulletPool();
+		_ZombiePool = new ZombiePool();
+		_BulletPool = new BulletPool();
 	}
 	
 	@Override
@@ -272,15 +273,15 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 		        if (userDataArray[0] != null && userDataArray[1] != null) {
 		            if (userDataArray[0] instanceof Bullet && userDataArray[1] instanceof Zombie) {
-		            	mBulletPool.recycle((Bullet) userDataArray[0]);
-		            	mZombiePool.recycle((Zombie) userDataArray[1]);
+		            	_BulletPool.recycle((Bullet) userDataArray[0]);
+		            	_ZombiePool.recycle((Zombie) userDataArray[1]);
 		            } else if (userDataArray[1] instanceof Bullet && userDataArray[0] instanceof Zombie) {
-		            	mBulletPool.recycle((Bullet) userDataArray[1]);
-		            	mZombiePool.recycle((Zombie) userDataArray[0]);
+		            	_BulletPool.recycle((Bullet) userDataArray[1]);
+		            	_ZombiePool.recycle((Zombie) userDataArray[0]);
 		            } else if (userDataArray[0] instanceof Bullet) {
-		            	mBulletPool.recycle((Bullet) userDataArray[0]);
+		            	_BulletPool.recycle((Bullet) userDataArray[0]);
 					} else if (userDataArray[1] instanceof Bullet) {
-						mBulletPool.recycle((Bullet) userDataArray[1]);
+						_BulletPool.recycle((Bullet) userDataArray[1]);
 					}
 		        }
 				
@@ -299,8 +300,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			}
 		});
 		
-		scene.registerUpdateHandler(mZombiePool);
-		scene.registerUpdateHandler(mBulletPool);
+		scene.registerUpdateHandler(_ZombiePool);
+		scene.registerUpdateHandler(_BulletPool);
 		
 		final LevelLoader levelLoader = new LevelLoader();
 		levelLoader.setAssetBasePath("level/");
@@ -345,14 +346,14 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 				final String type = SAXUtils.getAttributeOrThrow(pAttributes, "type");
 	
 				if(type.equals("zombie")) {
-					Zombie zombie = mZombiePool.obtain(x, y);
+					Zombie zombie = _ZombiePool.obtain(x, y);
 					scene.registerTouchArea(zombie);
 					return zombie;
 				} else if(type.equals("player")) {
-					Player player = new Player(x, y, mAndroidTextureRegion, mBulletPool);
+					Player player = new Player(x, y, mAndroidTextureRegion);
 					mPlayer = player;
 					mZoomCamera.setChaseEntity(player); // follow player
-					mZombiePool.setPlayer(player);
+					_ZombiePool.setPlayer(player);
 					scene.registerTouchArea(player);
 					addObjectToLevel(player);
 					return player;

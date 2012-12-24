@@ -7,7 +7,6 @@ import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.util.adt.pool.GenericPool;
-
 import android.util.Log;
 
 public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHandler {
