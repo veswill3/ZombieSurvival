@@ -102,8 +102,14 @@ public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHan
 	 */
 	protected abstract void onRecycle(T pItem);
 
+	/**
+	 * @return the texture atlas to use
+	 */
 	public abstract BitmapTextureAtlas onCreateTextureAtlas();
 
+	/**
+	 * @return the texture region to use
+	 */
 	public abstract ITextureRegion onCreateTextureRegion();
 
 	public BitmapTextureAtlas getTextureAtlas() {
