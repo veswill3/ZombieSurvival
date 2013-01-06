@@ -9,8 +9,8 @@ public abstract class Enemy extends Character {
 	
 	protected final Entity mPlayer;
 
-	public Enemy(float pX, float pY, ITextureRegion pTextureRegion, FixtureDef pFixtureDef, Entity player) {
-		super(pX, pY, pTextureRegion, pFixtureDef);
+	public Enemy(float pX, float pY, float pWidth, float pHeight, ITextureRegion pTextureRegion, FixtureDef pFixtureDef, Entity player) {
+		super(pX, pY, pWidth, pHeight, pTextureRegion, pFixtureDef);
 		mPlayer = player;
 	}
 

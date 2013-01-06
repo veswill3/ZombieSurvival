@@ -14,8 +14,8 @@ public abstract class Character extends PhysicalGameObject implements ILevelObje
 	int mMaxSpeed;
 	int mHealth;
 
-	public Character(float pX, float pY, ITextureRegion pTextureRegion, FixtureDef pFixtureDef) {
-		super(pX, pY, pTextureRegion, pFixtureDef);
+	public Character(float pX, float pY, float pWidth, float pHeight, ITextureRegion pTextureRegion, FixtureDef pFixtureDef) {
+		super(pX, pY, pWidth, pHeight, pTextureRegion, pFixtureDef);
 		mGameModeUpdateHandler = onCreateGameModeUpdateHanderl();
 	}
 

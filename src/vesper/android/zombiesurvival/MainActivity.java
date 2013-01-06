@@ -20,6 +20,7 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.PhysicsWorld;
+import org.andengine.extension.svg.opengl.texture.atlas.bitmap.SVGBitmapTextureAtlasTextureRegionFactory;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.input.touch.detector.PinchZoomDetector;
 import org.andengine.input.touch.detector.PinchZoomDetector.IPinchZoomDetectorListener;
@@ -30,6 +31,10 @@ import org.andengine.opengl.texture.TextureManager;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
+import org.andengine.opengl.texture.atlas.bitmap.BuildableBitmapTextureAtlas;
+import org.andengine.opengl.texture.atlas.bitmap.source.IBitmapTextureAtlasSource;
+import org.andengine.opengl.texture.atlas.buildable.builder.BlackPawnTextureAtlasBuilder;
+import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder.TextureAtlasBuilderException;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.ui.activity.BaseGameActivity;
@@ -107,7 +112,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	public static BitmapTextureAtlas _BulletTextureAtlas;
 	public static ITextureRegion _BulletTextureRegion;
 
-	public static BitmapTextureAtlas _ZombieTextureAtlas;
+	public static BuildableBitmapTextureAtlas _ZombieTextureAtlas;
 	public static ITextureRegion _ZombieTextureRegion;
 	
 	
@@ -209,9 +214,15 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		_BulletTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(_BulletTextureAtlas, this, "bullet.png", 0, 0, 1, 1);
 		_BulletTextureAtlas.load();
 		// Zombie texture
-		_ZombieTextureAtlas = new BitmapTextureAtlas(textureMgr, 32, 32, TextureOptions.BILINEAR);
-		_ZombieTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(_ZombieTextureAtlas, this, "Zombie.png", 0, 0, 1, 1);
-		_ZombieTextureAtlas.load();
+		SVGBitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		_ZombieTextureAtlas = new BuildableBitmapTextureAtlas(textureMgr, 128, 128, TextureOptions.BILINEAR);
+		_ZombieTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(_ZombieTextureAtlas, this, "zombie.svg", 128, 128);
+		try {
+			_ZombieTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
+			_ZombieTextureAtlas.load();
+		} catch (final TextureAtlasBuilderException e) {
+			Debug.e(e);
+		}
 		
 		_ZombiePool = new ZombiePool();
 		_BulletPool = new BulletPool();

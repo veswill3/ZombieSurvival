@@ -14,9 +14,11 @@ public class Bullet extends PhysicalGameObject {
 			CATEGORYBIT_BULLET, MASKBITS_BULLET, (short)0);
 	
 	private static final float BULLET_SPEED = 50;
+	private static final float BULLET_WIDTH = 8;
+	private static final float BULLET_HEIGHT = 8;
 
 	public Bullet(float pX, float pY, ITextureRegion pTextureRegion) {
-		super(pX, pY, pTextureRegion, mFixtureDef);
+		super(pX, pY, BULLET_WIDTH, BULLET_HEIGHT, pTextureRegion, mFixtureDef);
 		getBody().setBullet(true);
 	}
 

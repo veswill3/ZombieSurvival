@@ -4,13 +4,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.andengine.engine.handler.IUpdateHandler;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.util.adt.pool.GenericPool;
 import android.util.Log;
 
 public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHandler {
-    protected BitmapTextureAtlas mTextureAtlas;
     protected ITextureRegion mTextureRegion;
 
     private Set<T> mEntitiesToAddToWorld = Collections .synchronizedSet(new HashSet<T>());
@@ -18,11 +16,6 @@ public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHan
     
     
     public EntityPool() {
-        this.setTextureAtlas(onCreateTextureAtlas());
-        assert getTextureAtlas() instanceof BitmapTextureAtlas;
-        
-        this.onTextureAtlasCreated();
-
         this.setTextureRegion(onCreateTextureRegion());
         assert getTextureRegion() instanceof ITextureRegion;
     }
@@ -87,10 +80,6 @@ public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHan
         }
     }
 
-    private void onTextureAtlasCreated() {
-    	mTextureAtlas.load();
-	}
-
 	@Override
     protected void onHandleRecycleItem(final T pItem) {
         onRecycle(pItem);
@@ -103,22 +92,9 @@ public abstract class EntityPool<T> extends GenericPool<T> implements IUpdateHan
 	protected abstract void onRecycle(T pItem);
 
 	/**
-	 * @return the texture atlas to use
-	 */
-	public abstract BitmapTextureAtlas onCreateTextureAtlas();
-
-	/**
 	 * @return the texture region to use
 	 */
 	public abstract ITextureRegion onCreateTextureRegion();
-
-	public BitmapTextureAtlas getTextureAtlas() {
-		return mTextureAtlas;
-	}
-
-	public void setTextureAtlas(BitmapTextureAtlas pTextureAtlas) {
-		mTextureAtlas = pTextureAtlas;
-	}
 
 	public ITextureRegion getTextureRegion() {
 		return mTextureRegion;

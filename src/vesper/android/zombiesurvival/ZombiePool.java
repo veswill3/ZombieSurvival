@@ -1,6 +1,5 @@
 package vesper.android.zombiesurvival;
 
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import android.util.Log;
 
@@ -36,12 +35,6 @@ public class ZombiePool extends EntityPool<Zombie> {
 	protected void onRecycle(Zombie pItem) {
         pItem.setActive(false);
         MainActivity.removedObjectFromLevel(pItem);
-	}
-
-	@Override
-	public BitmapTextureAtlas onCreateTextureAtlas() {
-		Log.d("ZombiePool", "onCreateTextureAtlas");
-		return MainActivity._ZombieTextureAtlas;
 	}
 
 	@Override

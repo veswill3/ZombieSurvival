@@ -16,9 +16,11 @@ public class Zombie extends Enemy {
 			CATEGORYBIT_ENEMY, MASKBITS_ZOMBIE, (short)0);
 	
 	private static final int SMELL_RADIUS = 100;
+	private static final float ZOMBIE_WIDTH = 32;
+	private static final float ZOMBIE_HEIGHT = 32;
 	
 	public Zombie(float pX, float pY, ITextureRegion pTextureRegion, Entity player) {
-		super(pX, pY, pTextureRegion, mFixtureDef, player);
+		super(pX, pY, ZOMBIE_WIDTH, ZOMBIE_HEIGHT, pTextureRegion, mFixtureDef, player);
 		
 		onDisableLevelEditMode();
 	}

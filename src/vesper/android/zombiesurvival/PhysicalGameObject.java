@@ -18,8 +18,8 @@ public class PhysicalGameObject extends Sprite {
 	
 	private final Body mBody;
 
-	public PhysicalGameObject(float pX, float pY, ITextureRegion pTextureRegion, FixtureDef pFixtureDef) {
-		super(pX, pY, pTextureRegion, MainActivity._VBOM);
+	public PhysicalGameObject(float pX, float pY, float pWidth, float pHeight, ITextureRegion pTextureRegion, FixtureDef pFixtureDef) {
+		super(pX, pY, pWidth, pHeight, pTextureRegion, MainActivity._VBOM);
 		
 		setCullingEnabled(true); // no need to continue to draw when not onscreen
 

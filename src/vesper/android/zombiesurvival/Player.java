@@ -27,8 +27,11 @@ public class Player extends Character implements IObjectWithHUD {
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
 			CATEGORYBIT_PLAYER, MASKBITS_PLAYER, (short)0);
 	
+	private static final float PLAYER_WIDTH = 32;
+	private static final float PLAYER_HEIGHT = 32;
+	
 	public Player(float pX, float pY, ITextureRegion pTextureRegion) {
-		super(pX, pY, pTextureRegion, mFixtureDef);
+		super(pX, pY, PLAYER_WIDTH, PLAYER_HEIGHT, pTextureRegion, mFixtureDef);
 		
 		// start with a pistol
 		mWeapon = new Pistol(this);

@@ -1,6 +1,5 @@
 package vesper.android.zombiesurvival;
 
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import android.util.Log;
 import com.badlogic.gdx.math.Vector2;
@@ -28,11 +27,6 @@ public class BulletPool extends EntityPool<Bullet> {
 	@Override
 	protected void onRecycle(Bullet pItem) {
 		pItem.setActive(false);
-	}
-
-	@Override
-	public BitmapTextureAtlas onCreateTextureAtlas() {
-		return MainActivity._BulletTextureAtlas;
 	}
 
 	@Override
