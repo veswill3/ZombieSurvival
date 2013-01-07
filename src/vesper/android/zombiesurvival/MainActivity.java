@@ -99,23 +99,15 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	
 	// texture related
 	public static VertexBufferObjectManager _VBOM;
-	private BitmapTextureAtlas mBitmapTextureAtlas;
-	private ITextureRegion mAndroidTextureRegion;
-	
-	public static BitmapTextureAtlas _OnScreenControlTextureAtlas;
+	private BuildableBitmapTextureAtlas mTextureAtlas;
+	private ITextureRegion mPlayerTextureRegion;
 	public static ITextureRegion _OnScreenControlBaseTextureRegion;
 	public static ITextureRegion _OnScreenControlKnobTextureRegion;
-	
-	public static BitmapTextureAtlas _HealthTextureAtlas;
 	public static ITextureRegion _HealthTextureRegion;
-	
-	public static BitmapTextureAtlas _BulletTextureAtlas;
 	public static ITextureRegion _BulletTextureRegion;
-
-	public static BuildableBitmapTextureAtlas _ZombieTextureAtlas;
 	public static ITextureRegion _ZombieTextureRegion;
 	
-	
+	// pools
 	public static ZombiePool _ZombiePool;
 	public static BulletPool _BulletPool;
 	
@@ -138,6 +130,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	@Override
 	public void onCreateResources(OnCreateResourcesCallback pOnCreateResourcesCallback) throws Exception {
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		SVGBitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 		_VBOM = mEngine.getVertexBufferObjectManager();
 		splashTextureAtlas = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.DEFAULT);
 		splashTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(splashTextureAtlas, this,"splash.png", 0, 0);
@@ -193,33 +186,17 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	{
 		_PhysicsWorld = new PhysicsWorld(new Vector2(0, 0), false);
 		
-		// TODO - use the same texture atlas for all textures to reduce memory footprint
-		//		  also, confirm that this is how you are supposed to do it
 		final TextureManager textureMgr = this.getTextureManager();
-		// player texture
-		this.mBitmapTextureAtlas = new BitmapTextureAtlas(textureMgr, 32, 32, TextureOptions.BILINEAR);
-		this.mAndroidTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, this, "Android.png", 0, 0);
-		this.mBitmapTextureAtlas.load();
-		// onscreen control textures
-		_OnScreenControlTextureAtlas = new BitmapTextureAtlas(textureMgr, 256, 128, TextureOptions.BILINEAR);
-		_OnScreenControlBaseTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(_OnScreenControlTextureAtlas, this, "onscreen_control_base.png", 0, 0);
-		_OnScreenControlKnobTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(_OnScreenControlTextureAtlas, this, "onscreen_control_knob.png", 128, 0);
-		_OnScreenControlTextureAtlas.load();
-		// health meter texture
-		_HealthTextureAtlas = new BitmapTextureAtlas(textureMgr, 16, 16, TextureOptions.BILINEAR);
-		_HealthTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(_HealthTextureAtlas, this, "health.png", 0, 0);
-		_HealthTextureAtlas.load();
-		// Bullet texture
-		_BulletTextureAtlas = new BitmapTextureAtlas(textureMgr, 8, 8, TextureOptions.BILINEAR);
-		_BulletTextureRegion = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(_BulletTextureAtlas, this, "bullet.png", 0, 0, 1, 1);
-		_BulletTextureAtlas.load();
-		// Zombie texture
-		SVGBitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
-		_ZombieTextureAtlas = new BuildableBitmapTextureAtlas(textureMgr, 128, 128, TextureOptions.BILINEAR);
-		_ZombieTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(_ZombieTextureAtlas, this, "zombie.svg", 128, 128);
+		mTextureAtlas = new BuildableBitmapTextureAtlas(textureMgr, 1024, 1024, TextureOptions.BILINEAR);
+		mPlayerTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "player.svg", 128, 128);
+		_OnScreenControlBaseTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "onscreen_control_base.svg", 128, 128);
+		_OnScreenControlKnobTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "onscreen_control_knob.svg", 64, 64);
+		_HealthTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "health.svg", 32, 32);
+		_BulletTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "bullet.svg", 8, 8);
+		_ZombieTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "zombie.svg", 128, 128);
 		try {
-			_ZombieTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
-			_ZombieTextureAtlas.load();
+			mTextureAtlas.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 1, 0));
+			mTextureAtlas.load();
 		} catch (final TextureAtlasBuilderException e) {
 			Debug.e(e);
 		}
@@ -361,7 +338,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 					scene.registerTouchArea(zombie);
 					return zombie;
 				} else if(type.equals("player")) {
-					Player player = new Player(x, y, mAndroidTextureRegion);
+					Player player = new Player(x, y, mPlayerTextureRegion);
 					mPlayer = player;
 					mZoomCamera.setChaseEntity(player); // follow player
 					_ZombiePool.setPlayer(player);
