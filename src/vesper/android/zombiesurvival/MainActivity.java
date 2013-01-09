@@ -1,6 +1,12 @@
 package vesper.android.zombiesurvival;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import org.andengine.engine.camera.ZoomCamera;
 import org.andengine.engine.camera.hud.HUD;
@@ -45,6 +51,8 @@ import org.andengine.util.level.IEntityLoader;
 import org.andengine.util.level.LevelLoader;
 import org.andengine.util.level.constants.LevelConstants;
 import org.xml.sax.Attributes;
+
+import android.content.Context;
 import android.util.Log;
 import android.view.KeyEvent;
 import com.badlogic.gdx.math.Vector2;
@@ -411,11 +419,59 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	}
 
 	private String generateLevelXML() {
-		Log.d("generateLevelXML", "--- Start ----");
-		for (ILevelObject obj : _LevelObjectList) {
-			Log.d("generateLevelXML", obj.getLevelXML());
+		File dir = getFilesDir(); // get the file path and list any files
+		Log.d("generateLevelXML", "File path: " + dir.getPath());
+		Log.d("generateLevelXML", "Dir listing:");
+		for (String str : dir.list()) {
+			Log.d("generateLevelXML", str);
 		}
-		Log.d("generateLevelXML", "--- finish ---");
+		
+		Log.d("generateLevelXML", "--- Start XLM generation ----");
+		StringBuilder xml = new StringBuilder();
+		xml.append("Replace with level start XML\n");
+		for (ILevelObject obj : _LevelObjectList) {
+			xml.append(obj.getLevelXML() + "\n");
+		}
+		xml.append("Replace with level end XML");
+		
+		String filename = "testLevel.xml";
+		FileOutputStream outputStream;
+		
+		try {
+			outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+			outputStream.write(xml.toString().getBytes());
+			outputStream.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		Log.d("generateLevelXML", "--- finish XLM generation ---");
+		dir = getFilesDir();
+		Log.d("generateLevelXML", "Dir listing:");
+		for (String str : dir.list()) {
+			Log.d("generateLevelXML", str);
+		}
+		
+		// now read back the file for fun
+		try {
+			FileInputStream fis = openFileInput(filename);
+			InputStreamReader isr = new InputStreamReader(fis);
+			BufferedReader br = new BufferedReader(isr);
+			
+			String readline = br.readLine();
+			while (readline != null) {
+				Log.d("generateLevelXML", "from file - " + readline);
+				readline = br.readLine();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// delete the file
+		this.deleteFile(filename);
+		
 		return null;
 	}
 	
