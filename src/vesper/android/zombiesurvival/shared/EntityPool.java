@@ -1,4 +1,4 @@
-package vesper.android.zombiesurvival;
+package vesper.android.zombiesurvival.shared;
 
 import java.util.Collections;
 import java.util.HashSet;

@@ -1,7 +1,9 @@
-package vesper.android.zombiesurvival;
+package vesper.android.zombiesurvival.enemy;
 
 import org.andengine.entity.Entity;
 import org.andengine.opengl.texture.region.ITextureRegion;
+
+import vesper.android.zombiesurvival.Character;
 
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 

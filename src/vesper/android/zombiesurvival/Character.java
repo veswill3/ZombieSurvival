@@ -5,6 +5,9 @@ import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.region.ITextureRegion;
 
+import vesper.android.zombiesurvival.shared.ILevelObject;
+import vesper.android.zombiesurvival.shared.PhysicalGameObject;
+
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 
 public abstract class Character extends PhysicalGameObject implements ILevelObject {

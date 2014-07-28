@@ -1,7 +1,11 @@
-package vesper.android.zombiesurvival;
+package vesper.android.zombiesurvival.weapon;
 
 import org.andengine.opengl.texture.region.ITextureRegion;
+
+import vesper.android.zombiesurvival.MainActivity;
+import vesper.android.zombiesurvival.shared.EntityPool;
 import android.util.Log;
+
 import com.badlogic.gdx.math.Vector2;
 
 public class BulletPool extends EntityPool<Bullet> {

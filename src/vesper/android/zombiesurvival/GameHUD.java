@@ -4,6 +4,8 @@ import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.hud.HUD;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
+import vesper.android.zombiesurvival.shared.IObjectWithHUD;
+
 /**
  * HUD to be displayed during game play
  */

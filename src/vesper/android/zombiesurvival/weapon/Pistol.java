@@ -1,4 +1,7 @@
-package vesper.android.zombiesurvival;
+package vesper.android.zombiesurvival.weapon;
+
+import vesper.android.zombiesurvival.Character;
+import vesper.android.zombiesurvival.MainActivity;
 
 import com.badlogic.gdx.math.Vector2;
 

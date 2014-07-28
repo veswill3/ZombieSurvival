@@ -1,8 +1,11 @@
-package vesper.android.zombiesurvival;
+package vesper.android.zombiesurvival.weapon;
 
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
 import org.andengine.opengl.texture.region.ITextureRegion;
+
+import vesper.android.zombiesurvival.shared.PhysicalGameObject;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.FixtureDef;

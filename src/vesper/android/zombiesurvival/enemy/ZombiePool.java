@@ -1,6 +1,10 @@
-package vesper.android.zombiesurvival;
+package vesper.android.zombiesurvival.enemy;
 
 import org.andengine.opengl.texture.region.ITextureRegion;
+
+import vesper.android.zombiesurvival.MainActivity;
+import vesper.android.zombiesurvival.Player;
+import vesper.android.zombiesurvival.shared.EntityPool;
 import android.util.Log;
 
 public class ZombiePool extends EntityPool<Zombie> {

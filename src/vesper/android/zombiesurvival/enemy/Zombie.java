@@ -1,4 +1,4 @@
-package vesper.android.zombiesurvival;
+package vesper.android.zombiesurvival.enemy;
 
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.entity.Entity;

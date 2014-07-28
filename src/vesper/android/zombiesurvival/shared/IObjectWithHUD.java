@@ -1,4 +1,4 @@
-package vesper.android.zombiesurvival;
+package vesper.android.zombiesurvival.shared;
 
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.hud.HUD;

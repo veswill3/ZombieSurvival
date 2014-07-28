@@ -1,4 +1,4 @@
-package vesper.android.zombiesurvival;
+package vesper.android.zombiesurvival.weapon;
 
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.camera.hud.HUD;
@@ -6,6 +6,10 @@ import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
 import org.andengine.engine.camera.hud.controls.BaseOnScreenControl;
 import org.andengine.engine.camera.hud.controls.AnalogOnScreenControl.IAnalogOnScreenControlListener;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
+
+import vesper.android.zombiesurvival.Character;
+import vesper.android.zombiesurvival.MainActivity;
+import vesper.android.zombiesurvival.shared.IObjectWithHUD;
 import android.opengl.GLES20;
 
 /**
