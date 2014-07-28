@@ -55,6 +55,10 @@ import org.xml.sax.Attributes;
 import android.content.Context;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
@@ -236,8 +240,26 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_MENU) {
 			// just some stuff for testing
-			generateLevelXML();
-			setLevelEditMode(!mLevelEditMode);
+			Log.d("VCW menu related", "about to show layout view");
+			super.setContentView(R.layout.in_game_menu);
+			Button btnGenXML = (Button) findViewById(R.id.btnGenXML);
+			btnGenXML.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Log.d("VCW menu related", "Generating XML and jumping back to game");
+					generateLevelXML();
+					setContentView(mRenderSurfaceView);
+				}
+			});
+			Button btnLvlEditMode = (Button) findViewById(R.id.btnLvlEditMode);
+			btnLvlEditMode.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Log.d("VCW menu related", "Toggling level edit mode and jumping back to game");
+					setLevelEditMode(!mLevelEditMode);
+					setContentView(mRenderSurfaceView);
+				}
+			});
 		}
 		return super.onKeyDown(keyCode, event);
 	}
