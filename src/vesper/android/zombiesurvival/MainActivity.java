@@ -244,14 +244,13 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_MENU) {
 			// just some stuff for testing
-			// just some stuff for testing
-			Log.d("temp", "about to show layout view");
-			super.setContentView(R.layout.testlayout);
+			Log.d("VCW menu related", "about to show layout view");
+			super.setContentView(R.layout.in_game_menu);
 			Button btnGenXML = (Button) findViewById(R.id.btnGenXML);
 			btnGenXML.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					Log.d("temp", "Generating XML and goign to jump back to the game");
+					Log.d("VCW menu related", "Generating XML and jumping back to game");
 					generateLevelXML();
 					setContentView(mRenderSurfaceView);
 				}
@@ -260,7 +259,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			btnLvlEditMode.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					Log.d("temp", "Toggling level edit mode and jumping back to game");
+					Log.d("VCW menu related", "Toggling level edit mode and jumping back to game");
 					setLevelEditMode(!mLevelEditMode);
 					setContentView(mRenderSurfaceView);
 				}

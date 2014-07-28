@@ -10,7 +10,7 @@
         android:layout_alignLeft="@+id/btnGenXML"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/btnGenXML"
-        android:text="Toggle Level Edit Mode" />
+        android:text="@string/toggle_level_edit_mode" />
 
     <Button
         android:id="@+id/btnGenXML"
@@ -19,6 +19,6 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:text="Generate Level XML" />
+        android:text="@string/generate_level_xml" />
 
 </RelativeLayout>

@@ -3,5 +3,7 @@
     <string name="app_name">ZombieSurvival</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">Zombie Survival</string>
+    <string name="toggle_level_edit_mode" >Toggle Level Edit Mode</string>
+    <string name="generate_level_xml">Generate Level XML</string>
 
 </resources>
