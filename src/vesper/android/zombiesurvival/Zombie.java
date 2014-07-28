@@ -16,6 +16,7 @@ public class Zombie extends Enemy {
 			CATEGORYBIT_ENEMY, MASKBITS_ZOMBIE, (short)0);
 	
 	private static final int SMELL_RADIUS = 100;
+	private static final float ZOMBIE_SPEED = 5;
 	private static final float ZOMBIE_WIDTH = 32;
 	private static final float ZOMBIE_HEIGHT = 32;
 	
@@ -54,7 +55,7 @@ public class Zombie extends Enemy {
 		toTarget.sub(this.getX(), this.getY());
 		// only if close enough to smell him
 		if (toTarget.len() < SMELL_RADIUS) {
-			getBody().setLinearVelocity(toTarget.nor().mul(10));
+			getBody().setLinearVelocity(toTarget.nor().mul(ZOMBIE_SPEED));
 		}
 		Vector2Pool.recycle(toTarget);
 	}

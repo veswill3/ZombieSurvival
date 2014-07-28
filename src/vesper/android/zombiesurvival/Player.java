@@ -27,6 +27,7 @@ public class Player extends Character implements IObjectWithHUD {
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
 			CATEGORYBIT_PLAYER, MASKBITS_PLAYER, (short)0);
 	
+	private static final float PLAYER_SPEED = 8;
 	private static final float PLAYER_WIDTH = 32;
 	private static final float PLAYER_HEIGHT = 32;
 	
@@ -75,7 +76,7 @@ public class Player extends Character implements IObjectWithHUD {
 			@Override
 			public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
 				final Body body = getBody();
-				final Vector2 velocity = Vector2Pool.obtain(pValueX * 10, pValueY * 10);
+				final Vector2 velocity = Vector2Pool.obtain(pValueX * PLAYER_SPEED, pValueY * PLAYER_SPEED);
 				body.setLinearVelocity(velocity);
 				Vector2Pool.recycle(velocity);
 			}

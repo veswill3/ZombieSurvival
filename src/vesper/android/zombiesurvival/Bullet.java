@@ -13,7 +13,7 @@ public class Bullet extends PhysicalGameObject {
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
 			CATEGORYBIT_BULLET, MASKBITS_BULLET, (short)0);
 	
-	private static final float BULLET_SPEED = 50;
+	private static final float BULLET_SPEED = 15;
 	private static final float BULLET_WIDTH = 8;
 	private static final float BULLET_HEIGHT = 8;
 
