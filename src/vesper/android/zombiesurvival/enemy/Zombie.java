@@ -15,7 +15,7 @@ public class Zombie extends Enemy {
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
 			CATEGORYBIT_ENEMY, MASKBITS_ZOMBIE, (short)0);
 	
-	private static final int SMELL_RADIUS = 100;
+	private static final int SMELL_RADIUS = 250;
 	private static final float ZOMBIE_SPEED = 5;
 	private static final float ZOMBIE_WIDTH = 32;
 	private static final float ZOMBIE_HEIGHT = 32;

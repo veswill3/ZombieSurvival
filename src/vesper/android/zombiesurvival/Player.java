@@ -13,10 +13,8 @@ import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import vesper.android.zombiesurvival.shared.IObjectWithHUD;
-import vesper.android.zombiesurvival.weapon.Pistol;
 import vesper.android.zombiesurvival.weapon.Weapon;
 import android.opengl.GLES20;
-
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
@@ -27,6 +25,8 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 public class Player extends Character implements IObjectWithHUD {
 	
 	private Weapon mWeapon;
+	private HUD mPlayerHUD;
+	private HUD mWeaponHUD;
 
 	public static final short MASKBITS_PLAYER = CATEGORYBIT_ENEMY + CATEGORYBIT_WALL + CATEGORYBIT_PLAYER;
 	private final static FixtureDef mFixtureDef = PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f, false,
@@ -38,10 +38,26 @@ public class Player extends Character implements IObjectWithHUD {
 	
 	public Player(float pX, float pY, ITextureRegion pTextureRegion) {
 		super(pX, pY, PLAYER_WIDTH, PLAYER_HEIGHT, pTextureRegion, mFixtureDef);
-		
-		// start with a pistol
-		mWeapon = new Pistol(this);
 		setActive(true);
+	}
+	
+	public void switchWeapon(Weapon newWeapon) {
+		// remove current weapon
+		if (mWeaponHUD != null) {
+			mPlayerHUD.getChildScene().clearChildScene();
+			mWeaponHUD.detachSelf();
+		}
+		// add new weapon
+		if (newWeapon != null) {
+			mWeapon = newWeapon;
+			Camera camera = mPlayerHUD.getCamera();
+			HUD weaponHUD = newWeapon.getHUD(camera, MainActivity._VBOM);
+			if (weaponHUD != null) {
+				mPlayerHUD.getChildScene().setChildScene(weaponHUD);
+				weaponHUD.setCamera(camera);
+			}
+			mWeaponHUD = weaponHUD;
+		}
 	}
 
 	@Override
@@ -51,7 +67,7 @@ public class Player extends Character implements IObjectWithHUD {
 	
 	@Override
 	public HUD getHUD(Camera pCamera, VertexBufferObjectManager pVertexBufferObjectManager) {
-		HUD playerHUD = new HUD(); // a HUD to attach everything related to the play to
+		HUD playerHUD = new HUD(); // a HUD to attach everything related to the player to
 		playerHUD.setCamera(pCamera);
 		
 		// create health meter
@@ -61,14 +77,18 @@ public class Player extends Character implements IObjectWithHUD {
 		HUD playerControlHUD = createPlayerControl(pCamera, pVertexBufferObjectManager);
 
 		// get the HUD from the weapon if it has one
-		HUD weaponHUD = mWeapon.getHUD(pCamera, pVertexBufferObjectManager);
-		if (weaponHUD != null) {
-			// need to chain the HUDs, so set this as a child scene of player control
-			playerControlHUD.setChildScene(weaponHUD);
+		if (mWeapon != null) {
+			HUD weaponHUD = mWeapon.getHUD(pCamera, pVertexBufferObjectManager);
+			if (weaponHUD != null) {
+				weaponHUD.setCamera(pCamera);
+				// need to chain the HUDs, so set this as a child scene of player control
+				playerControlHUD.setChildScene(weaponHUD);
+			}
+			mWeaponHUD = weaponHUD; // keep this around so we can manage it later
 		}
 		
 		playerHUD.setChildScene(playerControlHUD);
-		
+		mPlayerHUD = playerHUD;
 		return playerHUD;
 	}
 	

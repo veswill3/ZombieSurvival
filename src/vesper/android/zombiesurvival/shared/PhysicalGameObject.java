@@ -47,5 +47,13 @@ public class PhysicalGameObject extends Sprite {
 	public Body getBody() {
 		return mBody;
 	}
+	
+	public float getCenterX() {
+		return getX() + getWidth() / 2;
+	}
+	
+	public float getCenterY() {
+		return getY() + getHeight() / 2;
+	}
 
 }

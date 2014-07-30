@@ -4,6 +4,15 @@
     android:layout_height="fill_parent" >
 
     <Button
+        android:id="@+id/btnGenXML"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/generate_level_xml" />
+    
+    <Button
         android:id="@+id/btnLvlEditMode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -13,12 +22,21 @@
         android:text="@string/toggle_level_edit_mode" />
 
     <Button
-        android:id="@+id/btnGenXML"
+        android:id="@+id/btnUseSMG"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:text="@string/generate_level_xml" />
-
+        android:layout_below="@+id/btnLvlEditMode"
+        android:text="Switch to SMG" />
+    
+    <Button
+        android:id="@+id/btnUseSixShooter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnUseSMG"
+        android:text="Switch to Six Shooter" />
+    
 </RelativeLayout>

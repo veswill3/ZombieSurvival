@@ -59,6 +59,8 @@ import vesper.android.zombiesurvival.shared.ILevelObject;
 import vesper.android.zombiesurvival.shared.PhysicalGameObject;
 import vesper.android.zombiesurvival.weapon.Bullet;
 import vesper.android.zombiesurvival.weapon.BulletPool;
+import vesper.android.zombiesurvival.weapon.SubMachineGun;
+import vesper.android.zombiesurvival.weapon.SixShooter;
 import android.content.Context;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -267,6 +269,24 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 					setContentView(mRenderSurfaceView);
 				}
 			});
+			Button btnUseSMG = (Button) findViewById(R.id.btnUseSMG);
+			btnUseSMG.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Log.d("VCW menu related", "Switching to the pistol");
+					mPlayer.switchWeapon(new SubMachineGun(mPlayer));
+					setContentView(mRenderSurfaceView);
+				}
+			});
+			Button btnUseSixShooter = (Button) findViewById(R.id.btnUseSixShooter);
+			btnUseSixShooter.setOnClickListener(new OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Log.d("VCW menu related", "Switching to the six shooter");
+					mPlayer.switchWeapon(new SixShooter(mPlayer));
+					setContentView(mRenderSurfaceView);
+				}
+			});
 		}
 		return super.onKeyDown(keyCode, event);
 	}
@@ -397,6 +417,9 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		mGameHUD = new GameHUD(mZoomCamera, _VBOM, mPlayer);
 		mLevelEditHUD = new LevelEditHUD(mZoomCamera, this, _VBOM);
 		setLevelEditMode(false); // start in game mode
+		
+		// start with the SMG
+		mPlayer.switchWeapon(new SubMachineGun(mPlayer));
 	}
 
 	private void initSplashScene()
