@@ -12,5 +12,13 @@
 bin/
 gen/
 
+# Gradle folder and build
+.gradle/
+build/
+
+# Idea non-crucial project fileS
+*.iws
+
 # Local configuration file (sdk path, etc)
+.idea/workspace.xml
 local.properties

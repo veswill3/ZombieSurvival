@@ -1,0 +1,4 @@
+include ':andEngine'
+include ':andEnginePhysicsBox2DExtension'
+include ':andEngineSVGTextureRegionExtension'
+include ':zombieSurvival'
