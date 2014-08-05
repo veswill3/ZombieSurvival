@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/ZombieSurvival.iml" filepath="$PROJECT_DIR$/ZombieSurvival.iml" />
+      <module fileurl="file://$PROJECT_DIR$/andEngine/andEngine.iml" filepath="$PROJECT_DIR$/andEngine/andEngine.iml" />
+      <module fileurl="file://$PROJECT_DIR$/andEnginePhysicsBox2DExtension/andEnginePhysicsBox2DExtension.iml" filepath="$PROJECT_DIR$/andEnginePhysicsBox2DExtension/andEnginePhysicsBox2DExtension.iml" />
+      <module fileurl="file://$PROJECT_DIR$/andEngineSVGTextureRegionExtension/andEngineSVGTextureRegionExtension.iml" filepath="$PROJECT_DIR$/andEngineSVGTextureRegionExtension/andEngineSVGTextureRegionExtension.iml" />
+      <module fileurl="file://$PROJECT_DIR$/zombieSurvival/zombieSurvival.iml" filepath="$PROJECT_DIR$/zombieSurvival/zombieSurvival.iml" />
+    </modules>
+  </component>
+</project>
+
