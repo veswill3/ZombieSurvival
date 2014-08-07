@@ -88,8 +88,8 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private SurfaceScrollDetector mScrollDetector;
 	private float mPinchZoomStartedCameraZoomFactor;
 	private float mDefaultZoomFactor;
-	
-	public enum SceneType {
+
+    public enum SceneType {
 		SPLASH,
 		MENU,
 		OPTIONS,
@@ -124,6 +124,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	private ITextureRegion mPlayerTextureRegion;
 	public static ITextureRegion _OnScreenControlBaseTextureRegion;
 	public static ITextureRegion _OnScreenControlKnobTextureRegion;
+    public static ITextureRegion _MenuButtonTextureRegion;
 	public static ITextureRegion _HealthTextureRegion;
 	public static ITextureRegion _BulletTextureRegion;
 	public static ITextureRegion _ZombieTextureRegion;
@@ -137,6 +138,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 	public static PhysicsWorld _PhysicsWorld;
 	private HUD mGameHUD;
 	private HUD mLevelEditHUD;
+    private Sprite mMenuButton;
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -213,6 +215,7 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		_OnScreenControlBaseTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "onscreen_control_base.svg", 128, 128);
 		_OnScreenControlKnobTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "onscreen_control_knob.svg", 64, 64);
 		_HealthTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "health.svg", 32, 32);
+        _MenuButtonTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "menu_button.svg", 38, 32);
 		_BulletTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "bullet.svg", 8, 8);
 		_ZombieTextureRegion = SVGBitmapTextureAtlasTextureRegionFactory.createFromAsset(mTextureAtlas, this, "zombie.svg", 128, 128);
 		try {
@@ -247,46 +250,6 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 			default:
 				break;
 			}
-		} else if (keyCode == KeyEvent.KEYCODE_MENU) {
-			// just some stuff for testing
-			Log.d("VCW menu related", "about to show layout view");
-			super.setContentView(R.layout.in_game_menu);
-			Button btnGenXML = (Button) findViewById(R.id.btnGenXML);
-			btnGenXML.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					Log.d("VCW menu related", "Generating XML and jumping back to game");
-					generateLevelXML();
-					setContentView(mRenderSurfaceView);
-				}
-			});
-			Button btnLvlEditMode = (Button) findViewById(R.id.btnLvlEditMode);
-			btnLvlEditMode.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					Log.d("VCW menu related", "Toggling level edit mode and jumping back to game");
-					setLevelEditMode(!mLevelEditMode);
-					setContentView(mRenderSurfaceView);
-				}
-			});
-			Button btnUseSMG = (Button) findViewById(R.id.btnUseSMG);
-			btnUseSMG.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					Log.d("VCW menu related", "Switching to the pistol");
-					mPlayer.switchWeapon(new SubMachineGun(mPlayer));
-					setContentView(mRenderSurfaceView);
-				}
-			});
-			Button btnUseSixShooter = (Button) findViewById(R.id.btnUseSixShooter);
-			btnUseSixShooter.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					Log.d("VCW menu related", "Switching to the six shooter");
-					mPlayer.switchWeapon(new SixShooter(mPlayer));
-					setContentView(mRenderSurfaceView);
-				}
-			});
 		}
 		return super.onKeyDown(keyCode, event);
 	}
@@ -413,11 +376,65 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		} catch (final IOException e) {
 			Debug.e(e);
 		}
-		
-		mGameHUD = new GameHUD(mZoomCamera, _VBOM, mPlayer);
-		mLevelEditHUD = new LevelEditHUD(mZoomCamera, this, _VBOM);
+
+        mMenuButton = new Sprite(CAMERA_WIDTH - _MenuButtonTextureRegion.getWidth() - 10f, 10f, _MenuButtonTextureRegion, _VBOM) {
+            @Override
+            public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        // just some stuff for testing
+                        Log.d("VCW menu related", "about to show layout view from new menu button");
+                        setContentView(R.layout.in_game_menu);
+                        Button btnGenXML = (Button) findViewById(R.id.btnGenXML);
+                        btnGenXML.setOnClickListener(new OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Log.d("VCW menu related", "Generating XML and jumping back to game");
+                                generateLevelXML();
+                                setContentView(mRenderSurfaceView);
+                            }
+                        });
+                        Button btnLvlEditMode = (Button) findViewById(R.id.btnLvlEditMode);
+                        btnLvlEditMode.setOnClickListener(new OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Log.d("VCW menu related", "Toggling level edit mode and jumping back to game");
+                                setLevelEditMode(!mLevelEditMode);
+                                Log.d("VCW menu related", "jumping back to game");
+                                setContentView(mRenderSurfaceView);
+                            }
+                        });
+                        Button btnUseSMG = (Button) findViewById(R.id.btnUseSMG);
+                        btnUseSMG.setOnClickListener(new OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Log.d("VCW menu related", "Switching to the pistol");
+                                mPlayer.switchWeapon(new SubMachineGun(mPlayer));
+                                setContentView(mRenderSurfaceView);
+                            }
+                        });
+                        Button btnUseSixShooter = (Button) findViewById(R.id.btnUseSixShooter);
+                        btnUseSixShooter.setOnClickListener(new OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Log.d("VCW menu related", "Switching to the six shooter");
+                                mPlayer.switchWeapon(new SixShooter(mPlayer));
+                                setContentView(mRenderSurfaceView);
+                            }
+                        });
+                    }
+                });
+
+                return true;
+            }
+        };
+        mGameHUD = new GameHUD(mZoomCamera, _VBOM, mPlayer);
+        mLevelEditHUD = new LevelEditHUD(mZoomCamera, this, _VBOM);
 		setLevelEditMode(false); // start in game mode
-		
+
 		// start with the SMG
 		mPlayer.switchWeapon(new SubMachineGun(mPlayer));
 	}
@@ -546,6 +563,9 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		}
 		mZoomCamera.setChaseEntity(null); // camera should not follow player
 		mZoomCamera.setBoundsEnabled(false);
+        mMenuButton.detachSelf();
+        mLevelEditHUD.registerTouchArea(mMenuButton);
+        mLevelEditHUD.attachChild(mMenuButton);
 		mZoomCamera.setHUD(mLevelEditHUD);
 	}
 	
@@ -557,6 +577,9 @@ public class MainActivity extends BaseGameActivity implements IOnSceneTouchListe
 		mZoomCamera.setChaseEntity(mPlayer);
 		mZoomCamera.setZoomFactor(mDefaultZoomFactor);
 		mZoomCamera.setBoundsEnabled(true);
+        mMenuButton.detachSelf();
+        mGameHUD.registerTouchArea(mMenuButton);
+        mGameHUD.attachChild(mMenuButton);
 		mZoomCamera.setHUD(mGameHUD);
 	}
 	
