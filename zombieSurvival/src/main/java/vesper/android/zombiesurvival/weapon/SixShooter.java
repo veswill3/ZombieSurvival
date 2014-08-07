@@ -18,17 +18,6 @@ public class SixShooter extends Weapon {
 	}
 
 	@Override
-	protected void discharge(float pX, float pY) {
-		final Character parent = mParent;
-		// point where the user pressed - player
-		Vector2 direction = new Vector2(pX, pY).sub(parent.getCenterX(),
-				parent.getCenterY());
-		Bullet b = MainActivity._BulletPool.obtain(parent.getCenterX(),
-				parent.getCenterY(), direction);
-		mParent.getParent().attachChild(b);
-	}
-
-	@Override
 	public HUD getHUD(final Camera pCamera,
 			VertexBufferObjectManager pVertexBufferObjectManager) {
 		// TODO add a visual representation of the six shooters cylinder
@@ -42,8 +31,13 @@ public class SixShooter extends Weapon {
 					// convert from local to world coordinates
 					float x = pSceneTouchEvent.getX() + pCamera.getXMin();
 					float y = pSceneTouchEvent.getY() + pCamera.getYMin();
-					discharge(x, y);
-
+                    final Character parent = mParent;
+                    // point where the user pressed - player
+                    Vector2 direction = new Vector2(x, y).sub(parent.getCenterX(),
+                            parent.getCenterY());
+                    Bullet b = MainActivity._BulletPool.obtain(parent.getCenterX(),
+                            parent.getCenterY(), direction);
+                    parent.getParent().attachChild(b);
 					return true;
 				}
 				return false;

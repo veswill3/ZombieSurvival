@@ -14,22 +14,15 @@ import android.opengl.GLES20;
 import com.badlogic.gdx.math.Vector2;
 
 public class SubMachineGun extends Weapon {
-	
+
 //	private static final int MAX_AMMO = 50;
 //	private int mAmmo;
-	
+
 	public SubMachineGun(final Character pParent) {
 		super(pParent);
 //		this.mAmmo = MAX_AMMO;
 	}
 
-	@Override
-	protected void discharge(float pX, float pY) {
-		Character parent = mParent;
-		Bullet b = MainActivity._BulletPool.obtain(parent.getCenterX(), parent.getCenterY(), new Vector2(pX, pY));
-		mParent.getParent().attachChild(b);
-	}
-	
 	@Override
 	public HUD getHUD(Camera pCamera, VertexBufferObjectManager pVertexBufferObjectManager) {
 		// control is an analog joy stick on the right side of the screen
@@ -42,10 +35,12 @@ public class SubMachineGun extends Weapon {
 				if(pValueX == 0 && pValueY == 0) {
 					// do nothing
 				} else {
-					discharge(pValueX, pValueY);
+                    Character parent = mParent;
+                    Bullet b = MainActivity._BulletPool.obtain(parent.getCenterX(), parent.getCenterY(), new Vector2(pValueX, pValueY));
+                    parent.getParent().attachChild(b);
 				}
 			}
-	
+
 			@Override
 			public void onControlClick(final AnalogOnScreenControl pAnalogOnScreenControl) {
 				/* Nothing */
@@ -55,5 +50,5 @@ public class SubMachineGun extends Weapon {
 		weaponJoystick.getControlBase().setAlpha(0.5f);
 		return weaponJoystick;
 	}
-	
+
 }

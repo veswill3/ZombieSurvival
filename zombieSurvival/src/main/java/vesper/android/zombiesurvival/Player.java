@@ -71,7 +71,7 @@ public class Player extends Character implements IObjectWithHUD {
 		playerHUD.setCamera(pCamera);
 		
 		// create health meter
-		Sprite health = new Sprite(MainActivity.CAMERA_WIDTH - MainActivity._HealthTextureRegion.getWidth() - 10f, 10f, MainActivity._HealthTextureRegion, pVertexBufferObjectManager);
+		Sprite health = new Sprite((pCamera.getWidth() - MainActivity._HealthTextureRegion.getWidth()) / 2, 10f, MainActivity._HealthTextureRegion, pVertexBufferObjectManager);
 		playerHUD.attachChild(health);
 
 		HUD playerControlHUD = createPlayerControl(pCamera, pVertexBufferObjectManager);

@@ -18,13 +18,6 @@ public abstract class Weapon implements IObjectWithHUD {
 		mParent = pParent; // so we know who is holding the weapon
 	}
 	
-	/**
-	 * Discharge the weapon
-	 * @param x coordinate of the discharge
-	 * @param y coordinate of the discharge
-	 */
-	protected abstract void discharge(float x, float y);
-	
 	@Override
 	public abstract HUD getHUD(Camera pCamera, VertexBufferObjectManager pVertexBufferObjectManager);
 
